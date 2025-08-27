@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+python-dotenv
+google-generativeai
+PyMuPDF
+reportlab
+firebase-admin

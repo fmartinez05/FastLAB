@@ -24,18 +24,24 @@ try:
     firebase_admin.initialize_app(cred)
     db = firestore.client()
 except Exception as e:
-    print(f"ERROR: No se pudo inicializar Firebase Admin SDK. Asegúrate de que el archivo 'fastlab-firebase-adminsdk.json' existe y es correcto. Error: {e}")
+    print(f"ERROR: No se pudo inicializar Firebase Admin SDK. Error: {e}")
     db = None
 
 app = FastAPI(title="FastLAB AI Backend")
 
-# --- MIDDLEWARE DE CORS (Configuración Correcta) ---
+# --- LISTA DE ORÍGENES PERMITIDOS ---
+origins = [
+    "http://localhost:3000",  # Para desarrollo local
+    "https://fastlab-frontend.netlify.app", # Tu URL de producción
+]
+
+# --- MIDDLEWARE DE CORS ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Permite explícitamente tu frontend
+    allow_origins=origins, # Usa la lista de orígenes
     allow_credentials=True,
-    allow_methods=["*"], # Permite todos los métodos (GET, POST, etc.)
-    allow_headers=["*"], # Permite todos los headers (incluido Authorization)
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- DEPENDENCIA DE AUTENTICACIÓN REAL ---

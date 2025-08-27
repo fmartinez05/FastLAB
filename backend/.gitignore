@@ -11,3 +11,4 @@ __pycache__/
 # Archivos de bases de datos
 *.db
 *.sqlite
+*.json

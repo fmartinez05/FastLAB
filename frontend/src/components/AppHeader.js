@@ -4,7 +4,7 @@ import { logout } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 
 const AppHeader = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuth(); // Ahora sí se usa
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -19,6 +19,8 @@ const AppHeader = () => {
         <span>FastLAB</span>
       </div>
       <div className="user-controls">
+        {/* --- CORRECCIÓN AQUÍ: Mostramos el nombre del usuario --- */}
+        {currentUser && <span>{currentUser.displayName}</span>}
         <button onClick={handleLogout}>
           Cerrar Sesión
         </button>

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { auth } from './firebase-config';
 
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: 'https://fastlab-backend.onrender.com',
 });
 
 // Interceptor para añadir el token de autenticación a cada petición

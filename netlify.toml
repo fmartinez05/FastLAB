@@ -1,17 +1,17 @@
 # Archivo de configuración para Netlify
 
 [build]
-  # Directorio base donde se ejecutarán los comandos (npm install, npm run build)
+  # Directorio base donde se ejecutarán los comandos
   base = "frontend"
 
-  # Comando para construir la aplicación de React
+  # Comando para construir la aplicación
   command = "npm run build"
 
   # Directorio final que Netlify debe publicar
-  publish = "frontend/build"
+  # --- CORRECCIÓN AQUÍ ---
+  publish = "build"
 
-# Regla de redirección para que funcionen las rutas de React (como /dashboard)
-# Esto reemplaza y hace el mismo trabajo que el archivo _redirects
+# Regla de redirección para que funcionen las rutas de React
 [[redirects]]
   from = "/*"
   to = "/index.html"

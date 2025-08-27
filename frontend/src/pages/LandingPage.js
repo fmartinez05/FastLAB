@@ -30,7 +30,7 @@ const LandingPage = () => {
       {/* Sección Principal (Hero) */}
       <main>
         <section className="hero-section">
-          <h1>Analiza tus prácticas de laboratorio a golpe de clic con IA</h1>
+          <h1>Analiza tus prácticas de laboratorio sin esfuerzo con IA</h1>
           <p>
             FastLAB es la herramienta definitiva para estudiantes y profesionales de bioquímica. Sube tus guiones de prácticas y deja que nuestra inteligencia artificial haga el trabajo pesado.
           </p>

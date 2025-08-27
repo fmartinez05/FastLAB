@@ -7,3 +7,4 @@ google-generativeai
 PyMuPDF
 reportlab
 firebase-admin
+scikit-learn

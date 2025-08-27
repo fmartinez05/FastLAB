@@ -20,7 +20,7 @@ const LandingPage = () => {
       <nav className="landing-nav">
         <div className="landing-logo-container">
           <img src="/fastlab_logo.png" alt="FastLAB Logo" className="landing-logo" />
-          <span>FastLAB</span>
+          <span>LabNote</span>
         </div>
         <button className="login-button-nav" onClick={handleLogin}>
           Iniciar Sesión
@@ -32,7 +32,7 @@ const LandingPage = () => {
         <section className="hero-section">
           <h1>Analiza tus prácticas de laboratorio sin esfuerzo con IA</h1>
           <p>
-            FastLAB es la herramienta definitiva para estudiantes y profesionales de bioquímica. Sube tus guiones de prácticas y deja que nuestra inteligencia artificial haga el trabajo pesado.
+            LabNote es la herramienta definitiva para estudiantes y profesionales de bioquímica. Sube tus guiones de prácticas y deja que nuestra inteligencia artificial haga el trabajo pesado.
           </p>
           <button className="cta-button" onClick={handleLogin}>
             Comenzar ahora
@@ -41,7 +41,7 @@ const LandingPage = () => {
 
         {/* Sección de Ventajas */}
         <section className="features-section">
-          <h2>¿Qué podrás conseguir apoyándote en FastLAB?</h2>
+          <h2>¿Qué podrás conseguir apoyándote en LabNote?</h2>
           <div className="feature-grid">
             <div className="feature-card">
               <h3>🔬 Análisis Científico Profundo</h3>
@@ -53,7 +53,7 @@ const LandingPage = () => {
             </div>
             <div className="feature-card">
               <h3>✍️ Anotaciones Inteligentes</h3>
-              <p>Toma notas con teclado o Apple Pencil. FastLAB organiza y analiza toda tu información para generar conclusiones.</p>
+              <p>Toma notas con teclado o Apple Pencil. LabNote organiza y analiza toda tu información para generar conclusiones.</p>
             </div>
             <div className="feature-card">
               <h3>📄 Informes Profesionales Automáticos</h3>

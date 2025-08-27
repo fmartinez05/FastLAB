@@ -16,7 +16,7 @@ const AppHeader = () => {
     <header className="app-header">
       <div className="app-logo-container">
         <img src="/fastlab_logo.png" alt="FastLAB Logo" className="app-logo" />
-        <span>FastLAB</span>
+        <span>LabNote</span>
       </div>
       <div className="user-controls">
         {/* --- CORRECCIÓN AQUÍ: Mostramos el nombre del usuario --- */}

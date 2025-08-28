@@ -1,5 +1,5 @@
 /* === FUENTES Y CONFIGURACIÓN GLOBAL === */
-@import url('[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap)');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -12,7 +12,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* === ESTILOS PÁGINA DE INICIO (LANDING PAGE) === */
+/* === ESTILOS PÁGINA DE INICIO (LANDING PAGE) - SIN CAMBIOS === */
 .landing-container {
   color: #E2E8F0;
   min-height: 100vh;
@@ -60,7 +60,7 @@ body {
 
 .hero-section {
   text-align: center;
-  padding: 4rem 2rem 3rem; 
+  padding: 4rem 2rem 3rem;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -69,7 +69,7 @@ body {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 800;
   line-height: 1.2;
-  margin-bottom: 1rem; 
+  margin-bottom: 1rem;
   background: -webkit-linear-gradient(45deg, #3182CE, #38A169);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -78,7 +78,7 @@ body {
 .hero-section p {
   font-size: 1.25rem;
   color: #A0AEC0;
-  margin-bottom: 2rem; 
+  margin-bottom: 2rem;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
@@ -123,7 +123,7 @@ body {
 }
 
 .feature-card {
-  background-color: rgba(26, 32, 44, 0.7); 
+  background-color: rgba(26, 32, 44, 0.7);
   backdrop-filter: blur(5px);
   padding: 2rem;
   border-radius: 12px;
@@ -155,18 +155,19 @@ body {
   max-width: 1000px;
   margin: 2rem auto;
   padding: 2rem;
-  background-color: #FFFFFF; 
+  background-color: #FFFFFF; /* Fondo del contenedor principal a blanco */
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  color: #1A202C; 
+  color: #1A202C; /* Color de texto principal a oscuro para contraste */
 }
 
+/* --- CAMBIO: Header de la app interna a azul oscuro --- */
 .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 5%;
-  background-color: #0A192F; 
+  background-color: #0A192F; /* Fondo oscuro para el header */
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
@@ -179,7 +180,7 @@ body {
   gap: 12px;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #FFFFFF; 
+  color: #FFFFFF; /* Texto del logo en blanco */
 }
 
 .app-logo {
@@ -187,7 +188,7 @@ body {
 }
 
 .user-controls button {
-  background-color: #E53E3E; 
+  background-color: #E53E3E; /* Rojo para cerrar sesión */
   padding: 8px 16px;
   font-size: 0.9rem;
   color: white;
@@ -208,7 +209,7 @@ body {
 }
 
 .report-card {
-  background-color: #F7FAFC; 
+  background-color: #F7FAFC; /* Fondo de las tarjetas a gris muy claro */
   border: 1px solid #E2E8F0;
   border-radius: 8px;
   padding: 1.5rem;
@@ -224,7 +225,7 @@ body {
 
 .report-card h4 {
   margin-top: 0;
-  color: #2B6CB0; 
+  color: #2B6CB0; /* Azul oscuro para los títulos */
   font-size: 1.1rem;
 }
 
@@ -236,7 +237,7 @@ section {
 }
 
 h2 {
-  color: #2D3748;
+  color: #2D3748; /* Títulos oscuros */
   border-bottom: 2px solid #E2E8F0;
   padding-bottom: 0.75rem;
   margin-top: 2.5rem;
@@ -246,35 +247,16 @@ h2 {
 }
 
 h3 {
-  color: #3182CE;
+  color: #3182CE; /* Azul vibrante para subtítulos */
   font-size: 1.4rem;
   margin-top: 1.5rem;
 }
 
-/* --- CAMBIO: Ancho del textarea --- */
-textarea {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #CBD5E0;
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  margin-top: 0.5rem;
-  box-sizing: border-box; /* Asegura que el padding no añada ancho */
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-textarea:focus {
-  border-color: #3182CE;
-  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
-  outline: none;
-}
-
-
 .summary {
-  background-color: #EBF8FF; 
+  background-color: #EBF8FF; /* Fondo celeste muy claro */
   padding: 1rem 1.5rem;
   border-radius: 8px;
-  border-left: 5px solid #3182CE; 
+  border-left: 5px solid #3182CE; /* Borde azul vibrante */
   margin-bottom: 1.5rem;
 }
 
@@ -306,7 +288,7 @@ button:disabled {
 }
 
 .generate-report-button {
-    background-color: #38A169; 
+    background-color: #38A169; /* Verde para generar PDF */
 }
 .generate-report-button:hover {
     background-color: #2F855A;
@@ -321,11 +303,11 @@ input[type="file"] {
   background-color: #F7FAFC;
   color: #2D3748;
 }
-
+/* --- CAMBIO: Estilos del botón selector de archivo a azul oscuro --- */
 input[type="file"]::file-selector-button {
-    background-color: #0A192F; 
+    background-color: #0A192F; /* Fondo oscuro para el botón selector */
     color: white;
-    border: 1px solid #0A192F; 
+    border: 1px solid #0A192F; /* Borde oscuro */
     padding: 8px 12px;
     border-radius: 5px;
     margin-right: 1rem;
@@ -333,7 +315,7 @@ input[type="file"]::file-selector-button {
     transition: background-color 0.2s ease;
 }
 input[type="file"]::file-selector-button:hover {
-    background-color: #1A202C;
+    background-color: #1A202C; /* Un poco más claro al pasar el ratón */
     border-color: #1A202C;
 }
 
@@ -354,108 +336,7 @@ input[type="file"]::file-selector-button:hover {
   font-weight: 500;
 }
 
-/* === ESTILOS PIZARRA Y MODALES === */
-.whiteboard-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(10, 25, 47, 0.85); 
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.whiteboard-toolbar {
-  background-color: #1A202C;
-  padding: 1rem;
-  border-radius: 12px;
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-}
-
-.color-palette, .zoom-controls, .actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.color-swatch {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-  min-width: 30px;
-}
-
-.whiteboard-canvas-container {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  overflow: hidden;
-}
-
-.save-btn { background-color: #38A169; }
-.save-btn:hover { background-color: #2F855A; }
-.cancel-btn { background-color: #718096; }
-.cancel-btn:hover { background-color: #4A5568; }
-
-
-/* === NUEVOS ESTILOS PARA ANOTACIONES Y BORRADO === */
-
-/* --- CAMBIO: Estilo para la previsualización de la pizarra --- */
-.whiteboard-preview {
-  width: 100%;
-  height: 200px;
-  border: 2px dashed #CBD5E0;
-  border-radius: 8px;
-  margin-top: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #F7FAFC;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
-  overflow: hidden; /* Para que la imagen no se salga */
-}
-.whiteboard-preview:hover {
-  border-color: #3182CE;
-  background-color: #EBF8FF;
-}
-.whiteboard-preview img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-.whiteboard-preview-placeholder {
-  color: #718096;
-  font-style: italic;
-}
-
-.annotation-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #FFFFFF;
-  padding: 2rem;
-  z-index: 1001; 
-  border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  color: #1A202C;
-}
-
-.modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; }
-
+/* === ESTILOS MANTENIDOS DEL BOTÓN DE ELIMINAR === */
 .report-card .delete-button {
   background-color: #E53E3E;
   font-size: 0.8rem;

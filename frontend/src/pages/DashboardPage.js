@@ -12,6 +12,7 @@ const DashboardPage = () => {
     const [error, setError] = useState('');
 
     const fetchReports = async () => {
+        setIsLoading(true);
         setError('');
         try {
             const response = await getUserReports();
@@ -42,12 +43,10 @@ const DashboardPage = () => {
     };
 
     const handleDelete = async (reportId, filename) => {
-        // Pedimos confirmación al usuario
         if (window.confirm(`¿Estás seguro de que quieres borrar el informe "${filename}"? Esta acción no se puede deshacer.`)) {
             try {
                 await deleteReport(reportId);
-                // Actualizamos la lista de informes para reflejar el borrado
-                setReports(reports.filter(r => r.report_id !== reportId));
+                fetchReports(); // Volvemos a cargar la lista de informes desde el servidor
             } catch (err) {
                 setError("Error al borrar el informe.");
                 console.error("Error deleting report:", err);
@@ -60,22 +59,29 @@ const DashboardPage = () => {
             <AppHeader />
             <div className="App">
                 <section>
-                    {/* ... (sección para crear nuevo informe sin cambios) ... */}
+                    <div className="new-report-section">
+                        <h3>Crear un nuevo informe de laboratorio</h3>
+                        <p>Sube un guion de prácticas en formato PDF para empezar.</p>
+                        <input type="file" accept=".pdf" onChange={(e) => setFile(e.target.files[0])} />
+                        <button onClick={handleFileUpload} disabled={!file || isUploading}>
+                            {isUploading ? 'Analizando...' : 'Analizar Nuevo Guion'}
+                        </button>
+                    </div>
+                    {error && <p className="error">{error}</p>}
                     <div className="saved-reports-section">
                         <h3>Mis Informes Guardados</h3>
                         {isLoading ? <p>Cargando informes...</p> : (
                             <div className="dashboard-grid">
                                 {reports.length > 0 ? reports.map(report => (
                                     <div className="report-card" key={report.report_id}>
-                                        <div onClick={() => navigate(`/lab/${report.report_id}`)}>
+                                        <div onClick={() => navigate(`/lab/${report.report_id}`)} style={{cursor: 'pointer', flexGrow: 1}}>
                                             <h4>{report.filename}</h4>
                                             <p>{report.summary ? `${report.summary.substring(0, 120)}...` : 'Sin resumen.'}</p>
                                         </div>
-                                        {/* Botón de borrar */}
                                         <button 
                                             className="delete-button" 
                                             onClick={(e) => {
-                                                e.stopPropagation(); // Evita que al pulsar se navegue al informe
+                                                e.stopPropagation();
                                                 handleDelete(report.report_id, report.filename);
                                             }}
                                         >

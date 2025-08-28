@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Whiteboard from './Whiteboard'; // Importamos la nueva pizarra
+import Whiteboard from './Whiteboard';
 
 const AnnotationModal = ({ step, onSave, onCancel }) => {
   const [text, setText] = useState(step.annotation?.text || '');
@@ -7,7 +7,6 @@ const AnnotationModal = ({ step, onSave, onCancel }) => {
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
 
   const handleSave = () => {
-    // Guardamos tanto el texto como el dibujo
     onSave({ text, drawing });
   };
   

@@ -339,7 +339,6 @@ input[type="file"]::file-selector-button:hover {
   font-weight: 500;
 }
 
-/* === NUEVOS ESTILOS PARA LA PIZARRA INTERACTIVA === */
 .whiteboard-modal {
   position: fixed;
   top: 0;

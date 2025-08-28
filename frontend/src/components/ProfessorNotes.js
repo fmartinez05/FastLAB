@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Whiteboard from './Whiteboard'; // Importamos la nueva pizarra
+import Whiteboard from './Whiteboard';
 
 const ProfessorNotes = ({ notes, setNotes }) => {
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);

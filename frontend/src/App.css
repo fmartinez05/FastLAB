@@ -12,7 +12,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* === ESTILOS PÁGINA DE INICIO (LANDING PAGE) - SIN CAMBIOS === */
+/* === ESTILOS PÁGINA DE INICIO (LANDING PAGE) === */
 .landing-container {
   color: #E2E8F0;
   min-height: 100vh;
@@ -60,7 +60,8 @@ body {
 
 .hero-section {
   text-align: center;
-  padding: 4rem 2rem 3rem;
+  /* --- AJUSTE DE ESPACIADO AQUÍ --- */
+  padding: 4rem 2rem 3rem; /* Menos padding arriba y abajo */
   max-width: 800px;
   margin: 0 auto;
 }
@@ -69,7 +70,8 @@ body {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 800;
   line-height: 1.2;
-  margin-bottom: 1rem;
+  /* --- AJUSTE DE ESPACIADO AQUÍ --- */
+  margin-bottom: 1rem; /* Menos margen inferior */
   background: -webkit-linear-gradient(45deg, #3182CE, #38A169);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -78,7 +80,7 @@ body {
 .hero-section p {
   font-size: 1.25rem;
   color: #A0AEC0;
-  margin-bottom: 2rem;
+  margin-bottom: 2rem; /* Ajustado */
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
@@ -123,8 +125,9 @@ body {
 }
 
 .feature-card {
-  background-color: rgba(26, 32, 44, 0.7);
-  backdrop-filter: blur(5px);
+  /* --- AJUSTE DE TRANSPARENCIA AQUÍ --- */
+  background-color: rgba(26, 32, 44, 0.7); /* Fondo de tarjeta oscuro con 70% de opacidad */
+  backdrop-filter: blur(5px); /* Efecto de desenfoque detrás de la tarjeta */
   padding: 2rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -334,4 +337,95 @@ input[type="file"]::file-selector-button:hover {
   border-radius: 8px;
   margin-top: 1rem;
   font-weight: 500;
+}
+
+/* === NUEVOS ESTILOS PARA LA PIZARRA INTERACTIVA === */
+.whiteboard-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(10, 25, 47, 0.85); /* Fondo oscuro semitransparente */
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.whiteboard-toolbar {
+  background-color: #1A202C;
+  padding: 1rem;
+  border-radius: 12px;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.color-palette, .zoom-controls, .actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  min-width: 30px;
+}
+
+.whiteboard-canvas-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  overflow: hidden; /* Para que el canvas no se salga */
+}
+
+.save-btn { background-color: #38A169; }
+.save-btn:hover { background-color: #2F855A; }
+.cancel-btn { background-color: #718096; }
+.cancel-btn:hover { background-color: #4A5568; }
+
+
+/* === NUEVOS ESTILOS PARA ANOTACIONES Y BORRADO === */
+.drawing-preview {
+  display: block;
+  max-width: 200px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.annotation-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #FFFFFF;
+  padding: 2rem;
+  z-index: 1001; /* Por encima del overlay */
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  color: #1A202C;
+}
+.annotation-modal textarea { width: 100%; box-sizing: border-box; margin-bottom: 1rem;}
+.modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; }
+
+.report-card .delete-button {
+  background-color: #E53E3E;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  margin-top: 1rem;
+  width: 100%;
+}
+.report-card .delete-button:hover {
+  background-color: #C53030;
 }

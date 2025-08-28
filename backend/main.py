@@ -27,28 +27,25 @@ except Exception as e:
     print(f"ERROR: No se pudo inicializar Firebase Admin SDK. Error: {e}")
     db = None
 
-app = FastAPI(title="FastLAB AI Backend")
-
-# --- LISTA DE ORÍGENES PERMITIDOS ---
-origins = [
-    "http://localhost:3000",  # Para desarrollo local
-    "https://fastlab-frontend.netlify.app", # Tu URL de producción
-]
+app = FastAPI(title="LabNote AI Backend")
 
 # --- MIDDLEWARE DE CORS ---
+origins = [
+    "http://localhost:3000",
+    "https://fastlab-frontend.netlify.app", # Reemplaza si cambias el nombre en Netlify
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins, # Usa la lista de orígenes
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- DEPENDENCIA DE AUTENTICACIÓN REAL ---
+# --- DEPENDENCIA DE AUTENTICACIÓN ---
 async def get_current_user(authorization: Optional[str] = Header(None)):
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header is missing")
-    
     try:
         token = authorization.split("Bearer ")[1]
         decoded_token = auth.verify_id_token(token)
@@ -71,10 +68,6 @@ class ReportDataPayload(BaseModel):
     specific_results: List[Dict[str, Any]] = []
 
 # --- ENDPOINTS ---
-@app.get("/")
-def read_root():
-    return {"status": "FastLAB AI Backend está en funcionamiento."}
-
 @app.post("/api/analyze-pdf/")
 async def analyze_pdf(file: UploadFile = File(...), user: dict = Depends(get_current_user)):
     user_uid = user['uid']
@@ -106,6 +99,70 @@ async def analyze_pdf(file: UploadFile = File(...), user: dict = Depends(get_cur
     
     return {**report_data, "report_id": new_report_ref.id}
 
+@app.get("/api/reports/")
+async def get_user_reports(user: dict = Depends(get_current_user)):
+    user_uid = user['uid']
+    reports_ref = db.collection('users').document(user_uid).collection('reports')
+    reports = []
+    for report_doc in reports_ref.stream():
+        report_data = report_doc.to_dict()
+        reports.append({
+            "report_id": report_doc.id,
+            "filename": report_data.get("filename", "N/A"),
+            "summary": report_data.get("summary", "")
+        })
+    return {"reports": reports}
+
+# --- ¡NUEVO ENDPOINT PARA BORRAR! ---
+@app.delete("/api/reports/{report_id}")
+async def delete_report(report_id: str, user: dict = Depends(get_current_user)):
+    """
+    Borra un informe específico de la base de datos del usuario.
+    """
+    user_uid = user['uid']
+    report_ref = db.collection('users').document(user_uid).collection('reports').document(report_id)
+    
+    if not report_ref.get().exists:
+        raise HTTPException(status_code=404, detail="Informe no encontrado.")
+    
+    report_ref.delete()
+    return {"message": "Informe borrado con éxito.", "report_id": report_id}
+
+@app.post("/api/reports/{report_id}/generate-pdf")
+async def generate_report_pdf(report_id: str, payload: ReportDataPayload, user: dict = Depends(get_current_user)):
+    report_content = get_full_report_content(
+        payload.full_text,
+        payload.annotations,
+        payload.professor_notes,
+        payload.specific_results
+    )
+    
+    # Preparamos los datos de las imágenes para el generador de PDF
+    images = {
+        "professor_notes_drawing": payload.professor_notes.get("drawing"),
+        "annotations_drawings": {ann.get("step"): ann.get("drawing") for ann in payload.annotations if ann.get("drawing")}
+    }
+    
+    pdf_buffer = create_professional_report(report_content, images)
+    
+    return StreamingResponse(
+        iter([pdf_buffer.getvalue()]),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment;filename=informe_{report_id}.pdf"}
+    )
+
+# ... (El resto de endpoints como get_report_data, solve_calculation, etc., no cambian)
+@app.get("/api/reports/{report_id}")
+async def get_report_data(report_id: str, user: dict = Depends(get_current_user)):
+    user_uid = user['uid']
+    report_ref = db.collection('users').document(user_uid).collection('reports').document(report_id)
+    report = report_ref.get()
+    
+    if not report.exists:
+        raise HTTPException(status_code=404, detail="Informe no encontrado.")
+        
+    return {**report.to_dict(), "report_id": report.id}
+
 @app.post("/api/solve-calculation/")
 async def solve_calculation(payload: CalculationQuery, user: dict = Depends(get_current_user)):
     solution = solve_calculation_query(payload.query)
@@ -121,51 +178,3 @@ async def save_report(report_id: str, payload: ReportDataPayload, user: dict = D
         
     report_ref.update(payload.dict())
     return {"message": "Informe actualizado con éxito.", "report_id": report_id}
-
-@app.get("/api/reports/")
-async def get_user_reports(user: dict = Depends(get_current_user)):
-    user_uid = user['uid']
-    reports_ref = db.collection('users').document(user_uid).collection('reports')
-    reports = []
-    for report_doc in reports_ref.stream():
-        report_data = report_doc.to_dict()
-        reports.append({
-            "report_id": report_doc.id,
-            "filename": report_data.get("filename", "N/A"),
-            "summary": report_data.get("summary", "")
-        })
-    return {"reports": reports}
-
-@app.get("/api/reports/{report_id}")
-async def get_report_data(report_id: str, user: dict = Depends(get_current_user)):
-    user_uid = user['uid']
-    report_ref = db.collection('users').document(user_uid).collection('reports').document(report_id)
-    report = report_ref.get()
-    
-    if not report.exists:
-        raise HTTPException(status_code=404, detail="Informe no encontrado.")
-        
-    return {**report.to_dict(), "report_id": report.id}
-
-@app.post("/api/reports/{report_id}/generate-pdf")
-async def generate_report_pdf(report_id: str, payload: ReportDataPayload, user: dict = Depends(get_current_user)):
-    calculated_results_text = "Cálculos no solicitados para este informe."
-    if payload.specific_results:
-        query = f"Realiza los cálculos necesarios para el guion usando estos resultados: {payload.specific_results}"
-        calculated_results_text = solve_calculation_query(query)
-
-    report_content = get_full_report_content(
-        payload.full_text,
-        payload.annotations,
-        payload.professor_notes,
-        payload.specific_results,
-        calculated_results_text
-    )
-    
-    pdf_buffer = create_professional_report(report_content)
-    
-    return StreamingResponse(
-        iter([pdf_buffer.getvalue()]),
-        media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment;filename=informe_{report_id}.pdf"}
-    )

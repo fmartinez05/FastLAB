@@ -2,11 +2,9 @@ import axios from 'axios';
 import { auth } from './firebase-config';
 
 const apiClient = axios.create({
-  // Asegúrate de que '/api' esté al final de esta línea
   baseURL: 'https://fastlab-backend.onrender.com/api',
 });
 
-// Interceptor para añadir el token de autenticación a cada petición
 apiClient.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
   if (user) {
@@ -15,8 +13,6 @@ apiClient.interceptors.request.use(async (config) => {
   }
   return config;
 });
-
-// --- Peticiones a la API ---
 
 export const uploadPDF = (file) => {
   const formData = new FormData();
@@ -46,4 +42,9 @@ export const downloadReport = (reportId, reportData) => {
   return apiClient.post(`/reports/${reportId}/generate-pdf`, reportData, {
     responseType: 'blob',
   });
+};
+
+// --- ¡NUEVA FUNCIÓN PARA BORRAR! ---
+export const deleteReport = (reportId) => {
+  return apiClient.delete(`/reports/${reportId}`);
 };

@@ -2,10 +2,7 @@ import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 from typing import List, Dict, Any
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 import json
-import re # Para expresiones regulares en cálculos
 
 from .pdf_parser import chunk_text
 
@@ -13,19 +10,6 @@ load_dotenv()
 API_KEY = os.getenv("GOOGLE_API_KEY")
 if API_KEY:
     genai.configure(api_key=API_KEY)
-
-document_chunks: List[str] = []
-vectorizer = TfidfVectorizer()
-chunk_vectors = None
-
-def setup_knowledge_base(text: str):
-    global document_chunks, vectorizer, chunk_vectors
-    document_chunks = chunk_text(text)
-    if not document_chunks:
-        return
-    vectorizer = TfidfVectorizer()
-    chunk_vectors = vectorizer.fit_transform(document_chunks)
-    print("Base de conocimiento configurada.")
 
 def generate_response(prompt_text: str) -> str:
     if not API_KEY:
@@ -81,92 +65,61 @@ def get_required_results_prompts(full_text: str) -> List[str]:
     except:
         return ["Resultado principal 1:", "Resultado principal 2:", "Observaciones finales:"]
 
-def solve_calculations(full_text: str, specific_results: List[Dict[str, Any]]) -> str:
-    """
-    Identifica y resuelve cálculos necesarios basados en el guion y los resultados específicos.
-    """
-    results_str = "\n".join([f"{res['prompt']} {res['value']}" for res in specific_results])
+def get_full_report_content(full_text: str, annotations: List[Dict[str, Any]], professor_notes: Dict[str, Any], specific_results: List[Dict[str, Any]]) -> str:
+    # Formateamos los datos para que la IA los entienda
+    annotations_text = "\n".join([f"- En el paso '{ann.get('step', 'N/A')}': {ann.get('text', '')}" for ann in annotations if ann.get('text')])
+    professor_notes_text = professor_notes.get('text', 'No se añadieron notas escritas.')
     
-    prompt = f"""
-    Eres un bioquímico experto. Analiza el siguiente guion de prácticas y los resultados obtenidos.
-    Identifica si se necesitan realizar cálculos (ej. concentraciones, diluciones, factores de dilución, absorbancia a concentración).
-    Si hay cálculos, plantéalos y resuélvelos paso a paso utilizando los datos proporcionados.
-    Si no se necesitan cálculos explícitos, indica "No se requieren cálculos específicos basados en la información proporcionada."
+    # Convertimos los dibujos (que vendrán como base64) a un simple indicador para la IA
+    professor_drawing = "[Se adjunta una anotación a mano]" if professor_notes.get('drawing') else "No hay."
+    annotations_drawing_text = "\n".join([f"- En el paso '{ann.get('step', 'N/A')}': [Se adjunta una anotación a mano]" for ann in annotations if ann.get('drawing')])
 
-    Guion de Prácticas:
-    {full_text}
-
-    Resultados Obtenidos:
-    {results_str}
-
-    Formato de la respuesta:
-    ## Cálculos Realizados
-    [Paso 1 del cálculo]
-    [Paso 2 del cálculo]
-    ...
-    Resultado Final: [Valor y unidades]
-    """
-    return generate_response(prompt)
-
-
-def get_full_report_content(full_text: str, annotations: List[Dict[str, Any]], professor_notes: Dict[str, Any], specific_results: List[Dict[str, Any]], calculated_results_text: str) -> str:
-    annotations_text = "\n".join([f"- En el paso '{ann['step']}': {ann['text']}" for ann in annotations if ann.get('text')])
-    professor_notes_text = professor_notes.get('text', 'No hay notas escritas.')
-    results_text = "\n".join([f"- {res['prompt']}: {res['value']}" for res in specific_results if res.get('value')])
+    results_text = "\n".join([f"- {res.get('prompt', 'N/A')}: {res.get('value', '')}" for res in specific_results if res and res.get('value')])
 
     prompt = f"""
     Actúa como un científico investigador senior redactando un informe de laboratorio profesional y completo.
     El informe debe ser claro, bien estructurado y listo para ser impreso.
     Utiliza el siguiente formato estricto, usando '##' para los títulos de sección.
 
-    **Guion Original:**
-    {full_text}
+    **CONTEXTO COMPLETO DEL EXPERIMENTO:**
 
-    **Notas del Profesor (puntos clave a destacar):**
-    {professor_notes_text}
+    1.  **Guion Original de la Práctica:**
+        {full_text}
 
-    **Resultados Específicos Medidos (DATOS PRIMARIOS):**
-    {results_text if results_text else "No se registraron resultados específicos."}
+    2.  **Notas del Profesor (puntos clave a destacar):**
+        - Notas escritas: {professor_notes_text}
+        - Anotación a mano: {professor_drawing}
 
-    **Cálculos y Resultados Derivados:**
-    {calculated_results_text}
+    3.  **Resultados Específicos Medidos (DATOS PRIMARIOS):**
+        {results_text if results_text else "No se registraron resultados específicos."}
 
-    **Anotaciones Generales del Procedimiento:**
-    {annotations_text if annotations_text else "No se registraron anotaciones generales."}
+    4.  **Anotaciones Generales del Procedimiento:**
+        - Notas escritas: {annotations_text if annotations_text else "No se registraron anotaciones generales."}
+        - Anotaciones a mano: {annotations_drawing_text if annotations_drawing_text else "No hay."}
+
     ---
-    **TAREA:**
+    **TAREA PRINCIPAL:**
     Redacta el informe completo siguiendo esta estructura:
 
     Informe de Laboratorio: [Extrae el título de la práctica del guion]
-    ## 1. Fundamento Teórico e Introducción
-    (Explica de forma concisa pero completa el principio científico de la práctica, basado en el guion).
+    
+    ## 1. Fundamento Teórico
+    (Explica de forma concisa pero completa el principio científico de la práctica).
+    
     ## 2. Materiales y Métodos
-    (Resume brevemente el procedimiento seguido. No lo copies literalmente, sintetízalo).
+    (Resume brevemente el procedimiento seguido, no lo copies literalmente).
+    
     ## 3. Resultados
-    (ESTA ES LA SECCIÓN MÁS IMPORTANTE. Presenta de forma clara y estructurada los datos de la sección 'Resultados Específicos Medidos' y los 'Cálculos y Resultados Derivados'. Si hay datos numéricos, preséntalos en tablas si es apropiado. Si hay cálculos, muéstralos. Sé objetivo y presenta los datos tal como se midieron o calcularon).
-    ## 4. Discusión y Análisis
-    (Compara los resultados presentados en la sección anterior con la teoría. Interpreta los datos. Discute por qué se obtuvieron esos resultados. Integra las 'Notas del Profesor' y las 'Anotaciones Generales' si son relevantes para el análisis. Si hubo errores o resultados inesperados, analízalos y propón explicaciones científicas. Si el guion tiene preguntas en una sección de 'Cuestiones' o 'Resultados', respóndelas aquí usando los datos).
-    ## 5. Conclusiones
-    (Resume las conclusiones principales del experimento en 2-3 frases claras y directas, basadas en los resultados y la discusión).
+    (Presenta de forma clara y estructurada los 'Resultados Específicos Medidos'. Si se pueden derivar cálculos de estos datos, realízalos, muéstralos y preséntalos aquí).
+    
+    ## 4. Discusión
+    (Interpreta los resultados, compáralos con la teoría esperada según el guion y discute por qué se obtuvieron esos resultados. Utiliza la información de las 'Notas del Profesor' y las 'Anotaciones Generales' para enriquecer el análisis y proponer posibles fuentes de error si los resultados son inesperados).
+    
+    ## 5. Cuestiones del Guion
+    (IMPORTANTE: Revisa el 'Guion Original'. Si encuentras una sección titulada 'Cuestiones', 'Preguntas' o similar, transcribe cada pregunta y respóndela detalladamente, utilizando TODOS los datos y resultados recopilados en el experimento. Si no encuentras tal sección, omite este apartado del informe).
+    
+    ## 6. Conclusiones
+    (Resume las conclusiones principales del experimento en 2-3 frases claras y directas).
     """
     
-    return generate_response(prompt)
-
-def solve_calculation_query(query: str) -> str:
-    """
-    Resuelve un problema de cálculo bioquímico usando la IA.
-    """
-    prompt = f"""
-    Actúa como un científico bioquímico experto y un meticuloso asistente de laboratorio. Tu tarea es resolver el siguiente problema de cálculo.
-
-    Sigue estos pasos estrictamente:
-    1.  Identifica la fórmula o principio científico necesario para resolver el problema.
-    2.  Muestra la fórmula claramente.
-    3.  Asigna los valores proporcionados en el problema a las variables de la fórmula.
-    4.  Muestra el cálculo paso a paso, despejando la incógnita.
-    5.  Proporciona el resultado numérico final con sus unidades correctas.
-    6.  Termina con una frase de "Instrucción:" clara y concisa que le diga al usuario exactamente qué debe hacer en el laboratorio.
-
-    **Problema a resolver:** "{query}"
-    """
     return generate_response(prompt)

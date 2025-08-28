@@ -69,7 +69,7 @@ def get_full_report_content(full_text: str, annotations: List[Dict[str, Any]], p
     # Formateamos los datos para que la IA los entienda
     annotations_text = "\n".join([f"- En el paso '{ann.get('step', 'N/A')}': {ann.get('text', '')}" for ann in annotations if ann.get('text')])
     professor_notes_text = professor_notes.get('text', 'No se añadieron notas escritas.')
-    
+
     # Convertimos los dibujos (que vendrán como base64) a un simple indicador para la IA
     professor_drawing = "[Se adjunta una anotación a mano]" if professor_notes.get('drawing') else "No hay."
     annotations_drawing_text = "\n".join([f"- En el paso '{ann.get('step', 'N/A')}': [Se adjunta una anotación a mano]" for ann in annotations if ann.get('drawing')])
@@ -102,24 +102,39 @@ def get_full_report_content(full_text: str, annotations: List[Dict[str, Any]], p
     Redacta el informe completo siguiendo esta estructura:
 
     Informe de Laboratorio: [Extrae el título de la práctica del guion]
-    
+
     ## 1. Fundamento Teórico
     (Explica de forma concisa pero completa el principio científico de la práctica).
-    
+
     ## 2. Materiales y Métodos
     (Resume brevemente el procedimiento seguido, no lo copies literalmente).
-    
+
     ## 3. Resultados
     (Presenta de forma clara y estructurada los 'Resultados Específicos Medidos'. Si se pueden derivar cálculos de estos datos, realízalos, muéstralos y preséntalos aquí).
-    
+
     ## 4. Discusión
     (Interpreta los resultados, compáralos con la teoría esperada según el guion y discute por qué se obtuvieron esos resultados. Utiliza la información de las 'Notas del Profesor' y las 'Anotaciones Generales' para enriquecer el análisis y proponer posibles fuentes de error si los resultados son inesperados).
-    
+
     ## 5. Cuestiones del Guion
     (IMPORTANTE: Revisa el 'Guion Original'. Si encuentras una sección titulada 'Cuestiones', 'Preguntas' o similar, transcribe cada pregunta y respóndela detalladamente, utilizando TODOS los datos y resultados recopilados en el experimento. Si no encuentras tal sección, omite este apartado del informe).
-    
+
     ## 6. Conclusiones
     (Resume las conclusiones principales del experimento en 2-3 frases claras y directas).
     """
-    
+    return generate_response(prompt)
+
+def solve_calculation_query(query: str) -> str:
+    prompt = f"""
+    Actúa como un científico bioquímico experto y un meticuloso asistente de laboratorio. Tu tarea es resolver el siguiente problema de cálculo.
+
+    Sigue estos pasos estrictamente:
+    1.  Identifica la fórmula o principio científico necesario para resolver el problema.
+    2.  Muestra la fórmula claramente.
+    3.  Asigna los valores proporcionados en el problema a las variables de la fórmula.
+    4.  Muestra el cálculo paso a paso, despejando la incógnita.
+    5.  Proporciona el resultado numérico final con sus unidades correctas.
+    6.  Termina con una frase de "Instrucción:" clara y concisa que le diga al usuario exactamente qué debe hacer en el laboratorio.
+
+    **Problema a resolver:** "{query}"
+    """
     return generate_response(prompt)

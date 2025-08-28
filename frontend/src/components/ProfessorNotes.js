@@ -27,10 +27,15 @@ const ProfessorNotes = ({ notes, setNotes }) => {
       />
 
       <h4>Apuntes a Mano (Apple Pencil / Ratón)</h4>
-      {notes?.drawing && <img src={notes.drawing} alt="Anotación del profesor" className="drawing-preview" />}
-      <button onClick={() => setIsWhiteboardOpen(true)}>
-        {notes?.drawing ? 'Editar Dibujo' : 'Abrir Pizarra'}
-      </button>
+      
+      {/* --- CAMBIO: Previsualización de la pizarra --- */}
+      <div className="whiteboard-preview" onClick={() => setIsWhiteboardOpen(true)}>
+        {notes?.drawing ? (
+          <img src={notes.drawing} alt="Anotación del profesor" />
+        ) : (
+          <span className="whiteboard-preview-placeholder">Haz clic para abrir la pizarra y dibujar</span>
+        )}
+      </div>
 
       {isWhiteboardOpen && (
         <Whiteboard 

@@ -26,6 +26,7 @@ const LabPage = () => {
                 annotations: data.annotations || [],
                 professor_notes: data.professor_notes || { text: '' },
                 specific_results: data.specific_results || [],
+                materials: data.materials || {}, // Aseguramos que materials sea un objeto
             });
         } catch (err) {
             setError("Error: No se pudo cargar el informe.");
@@ -83,6 +84,10 @@ const LabPage = () => {
     if (error) return <div className="error">{error}</div>;
     if (!reportData) return <div>No se encontraron datos para este informe.</div>;
 
+    // --- CÓDIGO NUEVO: Lógica para verificar si hay materiales que mostrar ---
+    const hasMaterials = reportData.materials && 
+        Object.values(reportData.materials).some(category => category.length > 0);
+
     return (
         <>
             <AppHeader />
@@ -105,7 +110,28 @@ const LabPage = () => {
                     />
                     <CalculationSolver />
                     
-                    <h2>Procedimiento Interactivo</h2>
+                    {/* --- CÓDIGO NUEVO: Sección de Materiales y Reactivos --- */}
+                    {hasMaterials && (
+                        <section>
+                            <h2>🧪 Materiales y Reactivos</h2>
+                            {Object.keys(reportData.materials).map(category => (
+                                reportData.materials[category].length > 0 && (
+                                    <div key={category} style={{marginBottom: '1.5rem'}}>
+                                        <h3 style={{textTransform: 'capitalize', fontSize: '1.2rem', marginBottom: '0.5rem'}}>
+                                            {category}
+                                        </h3>
+                                        <ul style={{marginTop: 0, paddingLeft: '20px'}}>
+                                            {reportData.materials[category].map((item, index) => (
+                                                <li key={index}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )
+                            ))}
+                        </section>
+                    )}
+                    
+                    <h2>🔬 Procedimiento Interactivo</h2>
                     <ProcedureList 
                         steps={reportData.procedure} 
                         annotations={reportData.annotations} 

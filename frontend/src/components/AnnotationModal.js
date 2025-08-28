@@ -28,10 +28,15 @@ const AnnotationModal = ({ step, onSave, onCancel }) => {
         />
 
         <h4>Apuntes a Mano (Apple Pencil / Ratón)</h4>
-        {drawing && <img src={drawing} alt="Anotación a mano" className="drawing-preview" />}
-        <button onClick={() => setIsWhiteboardOpen(true)}>
-          {drawing ? 'Editar Dibujo' : 'Abrir Pizarra'}
-        </button>
+        
+        {/* --- CAMBIO: Previsualización de la pizarra --- */}
+        <div className="whiteboard-preview" onClick={() => setIsWhiteboardOpen(true)}>
+            {drawing ? (
+                <img src={drawing} alt="Anotación a mano" />
+            ) : (
+                <span className="whiteboard-preview-placeholder">Haz clic para abrir la pizarra</span>
+            )}
+        </div>
         
         <div className="modal-actions">
           <button onClick={onCancel} className="cancel-btn">Cancelar</button>

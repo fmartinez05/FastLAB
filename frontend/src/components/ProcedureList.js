@@ -17,24 +17,34 @@ const completedStyle = {
 const ProcedureList = ({ steps, annotations, setAnnotations }) => {
   const [modalStep, setModalStep] = useState(null);
 
+  // CORRECCIÓN: Ahora trabajamos con arrays en lugar de objetos
   const handleToggleStep = (index) => {
-    const newAnnotations = { ...annotations };
-    if (newAnnotations[index]) {
-      newAnnotations[index].completed = !newAnnotations[index].completed;
-    } else {
-      newAnnotations[index] = { step: steps[index], completed: true, text: '' };
+    // Creamos una copia del array de anotaciones
+    const newAnnotations = [...annotations]; 
+    
+    // Si no existe una anotación para este paso, la creamos
+    if (!newAnnotations[index]) {
+      newAnnotations[index] = { step: steps[index], completed: false, text: '', drawing: null };
     }
+    
+    // Cambiamos el estado 'completed'
+    newAnnotations[index].completed = !newAnnotations[index].completed;
     setAnnotations(newAnnotations);
   };
 
+  // CORRECCIÓN: La lógica de guardado también se adapta para arrays
   const handleSaveAnnotation = (annotation) => {
     const index = modalStep.index;
-    const newAnnotations = { ...annotations };
-    if (newAnnotations[index]) {
-      newAnnotations[index].text = annotation.text;
-    } else {
-      newAnnotations[index] = { step: steps[index], completed: false, text: annotation.text };
+    const newAnnotations = [...annotations];
+
+    // Si no existe una anotación para este paso, la creamos
+    if (!newAnnotations[index]) {
+      newAnnotations[index] = { step: steps[index], completed: false, drawing: null };
     }
+    
+    // Actualizamos el texto de la anotación
+    newAnnotations[index].text = annotation.text;
+    
     setAnnotations(newAnnotations);
     setModalStep(null);
   };

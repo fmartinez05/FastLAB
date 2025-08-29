@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header, Response
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict # Importa ConfigDict
 from typing import List, Dict, Any, Optional
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
@@ -57,8 +57,10 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
 class CalculationQuery(BaseModel):
     query: str
 
-# FIX: Made fields optional to prevent 422 errors on save if frontend sends incomplete data
 class ReportDataPayload(BaseModel):
+    # FIX: Se añade configuración para ignorar campos extra enviados desde el frontend
+    model_config = ConfigDict(extra='ignore')
+
     filename: Optional[str] = None
     full_text: Optional[str] = None
     summary: Optional[str] = None
@@ -135,13 +137,11 @@ async def generate_report_pdf(report_id: str, payload: ReportDataPayload, user: 
         payload.specific_results
     )
 
-    # Preparamos los datos de las imágenes para el generador de PDF
     images = {
         "professor_notes_drawing": payload.professor_notes.get("drawing"),
         "annotations_drawings": {ann.get("step"): ann.get("drawing") for ann in payload.annotations if ann.get("drawing")}
     }
 
-    # Pass both text content and images to the report generator
     pdf_buffer = create_professional_report(report_content, images)
 
     return StreamingResponse(
@@ -174,6 +174,5 @@ async def save_report(report_id: str, payload: ReportDataPayload, user: dict = D
     if not report_ref.get().exists:
         raise HTTPException(status_code=404, detail="Informe no encontrado.")
 
-    # Use exclude_unset=True to only update fields that were actually sent by the client
     report_ref.update(payload.dict(exclude_unset=True))
     return {"message": "Informe actualizado con éxito.", "report_id": report_id}

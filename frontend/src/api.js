@@ -48,3 +48,8 @@ export const downloadReport = (reportId, reportData) => {
 export const deleteReport = (reportId) => {
   return apiClient.delete(`/reports/${reportId}`);
 };
+
+// --- NUEVA FUNCIÓN PARA EL ASISTENTE IA ---
+export const askAssistant = (query, context) => {
+  return apiClient.post('/assistant/ask', { query, context });
+};

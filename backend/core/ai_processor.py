@@ -138,3 +138,25 @@ def solve_calculation_query(query: str) -> str:
     **Problema a resolver:** "{query}"
     """
     return generate_response(prompt)
+
+# --- NUEVA FUNCIÓN PARA EL ASISTENTE ---
+def get_assistant_response(query: str, practice_context: str) -> str:
+    """
+    Genera una respuesta de experto bioquímico basada en una pregunta
+    y el contexto de la práctica de laboratorio.
+    """
+    prompt = f"""
+    Eres un científico bioquímico senior y un tutor académico experto. Tu misión es ayudar a un estudiante con sus dudas sobre una práctica de laboratorio.
+    Responde de manera profesional, clara y precisa. Basa tus respuestas principalmente en el contexto proporcionado del guion de la práctica.
+    Si la respuesta no se encuentra en el texto, puedes usar tu conocimiento experto, pero aclara que esa información es complementaria al guion.
+    Responde siempre en español.
+
+    **Contexto del Guion de la Práctica:**
+    ---
+    {practice_context}
+    ---
+
+    **Pregunta del Estudiante:**
+    "{query}"
+    """
+    return generate_response(prompt)

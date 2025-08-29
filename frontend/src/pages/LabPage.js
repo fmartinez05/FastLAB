@@ -7,6 +7,7 @@ import CalculationSolver from '../components/CalculationSolver';
 import ProcedureList from '../components/ProcedureList';
 import ResultsAnnotation from '../components/ResultsAnnotation';
 import AppHeader from '../components/AppHeader';
+import AiAssistant from '../components/AiAssistant';
 
 const LabPage = () => {
     const { reportId } = useParams();
@@ -157,6 +158,8 @@ const LabPage = () => {
                     </div>
                 </section>
             </div>
+	{/* -- 2. AÑADIR EL COMPONENTE DEL ASISTENTE AQUÍ -- */}
+            <AiAssistant practiceContext={reportData.full_text} />
         </>
     );
 };

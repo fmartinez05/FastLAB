@@ -1,8 +1,6 @@
 import os
-import json
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header, Response, Request
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header, Response
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
@@ -16,7 +14,8 @@ from core.ai_processor import (
     get_procedure_steps,
     get_full_report_content,
     get_required_results_prompts,
-    solve_calculation_query
+    solve_calculation_query,
+    get_assistant_response # <-- IMPORTAMOS LA NUEVA FUNCIÓN
 )
 from core.report_generator import create_professional_report
 
@@ -31,29 +30,10 @@ except Exception as e:
 
 app = FastAPI(title="LabNote AI Backend")
 
-# --- NUEVO MANEJADOR DE ERRORES DE VALIDACIÓN ---
-# Esta función se ejecutará cuando ocurra un error 422
-# y nos mostrará en los logs qué datos lo causaron.
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    try:
-        # Intenta obtener el cuerpo del request como JSON
-        body = await request.json()
-        print(f"--- CUERPO DE LA PETICIÓN INVÁLIDA ---")
-        print(json.dumps(body, indent=2))
-    except Exception as e:
-        print(f"No se pudo parsear el cuerpo de la petición: {e}")
-    
-    # Devuelve la respuesta de error 422 estándar
-    return JSONResponse(
-        status_code=422,
-        content={"detail": exc.errors()},
-    )
-
 # --- MIDDLEWARE DE CORS ---
 origins = [
     "http://localhost:3000",
-    "https://fastlab-frontend.netlify.app",
+    "[https://fastlab-frontend.netlify.app](https://fastlab-frontend.netlify.app)",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -80,7 +60,6 @@ class CalculationQuery(BaseModel):
 
 class ReportDataPayload(BaseModel):
     model_config = ConfigDict(extra='ignore')
-
     filename: Optional[str] = None
     full_text: Optional[str] = None
     summary: Optional[str] = None
@@ -90,8 +69,12 @@ class ReportDataPayload(BaseModel):
     professor_notes: Optional[Dict[str, Any]] = {}
     specific_results: Optional[List[Dict[str, Any]]] = []
 
+# --- NUEVO MODELO PARA EL ASISTENTE ---
+class AssistantQuery(BaseModel):
+    query: str
+    context: str
 
-# --- ENDPOINTS (sin cambios a partir de aquí) ---
+# --- ENDPOINTS ---
 @app.post("/api/analyze-pdf/")
 async def analyze_pdf(file: UploadFile = File(...), user: dict = Depends(get_current_user)):
     user_uid = user['uid']
@@ -156,14 +139,11 @@ async def generate_report_pdf(report_id: str, payload: ReportDataPayload, user: 
         payload.professor_notes,
         payload.specific_results
     )
-
     images = {
         "professor_notes_drawing": payload.professor_notes.get("drawing"),
         "annotations_drawings": {ann.get("step"): ann.get("drawing") for ann in payload.annotations if ann.get("drawing")}
     }
-
     pdf_buffer = create_professional_report(report_content, images)
-
     return StreamingResponse(
         iter([pdf_buffer.getvalue()]),
         media_type="application/pdf",
@@ -175,10 +155,8 @@ async def get_report_data(report_id: str, user: dict = Depends(get_current_user)
     user_uid = user['uid']
     report_ref = db.collection('users').document(user_uid).collection('reports').document(report_id)
     report = report_ref.get()
-
     if not report.exists:
         raise HTTPException(status_code=404, detail="Informe no encontrado.")
-
     return {**report.to_dict(), "report_id": report.id}
 
 @app.post("/api/solve-calculation/")
@@ -186,13 +164,23 @@ async def solve_calculation(payload: CalculationQuery, user: dict = Depends(get_
     solution = solve_calculation_query(payload.query)
     return {"solution": solution}
 
+# --- NUEVO ENDPOINT PARA EL ASISTENTE ---
+@app.post("/api/assistant/ask")
+async def ask_assistant(payload: AssistantQuery, user: dict = Depends(get_current_user)):
+    """
+    Recibe una pregunta y el contexto de la práctica para obtener una respuesta del asistente experto.
+    """
+    try:
+        solution = get_assistant_response(payload.query, payload.context)
+        return {"solution": solution}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al procesar la pregunta: {e}")
+
 @app.post("/api/reports/{report_id}/save")
 async def save_report(report_id: str, payload: ReportDataPayload, user: dict = Depends(get_current_user)):
     user_uid = user['uid']
     report_ref = db.collection('users').document(user_uid).collection('reports').document(report_id)
-
     if not report_ref.get().exists:
         raise HTTPException(status_code=404, detail="Informe no encontrado.")
-
     report_ref.update(payload.dict(exclude_unset=True))
     return {"message": "Informe actualizado con éxito.", "report_id": report_id}

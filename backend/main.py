@@ -1,6 +1,8 @@
 import os
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header, Response
-from fastapi.responses import StreamingResponse
+import json
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header, Response, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
@@ -15,7 +17,7 @@ from core.ai_processor import (
     get_full_report_content,
     get_required_results_prompts,
     solve_calculation_query,
-    get_assistant_response # <-- IMPORTAMOS LA NUEVA FUNCIÓN
+    get_assistant_response
 )
 from core.report_generator import create_professional_report
 
@@ -31,9 +33,12 @@ except Exception as e:
 app = FastAPI(title="LabNote AI Backend")
 
 # --- MIDDLEWARE DE CORS ---
+# Esta es la sección clave. Debe estar bien configurada y al principio.
+# "allow_methods" y "allow_headers" con "*" son cruciales para que
+# la solicitud de permiso OPTIONS funcione correctamente.
 origins = [
     "http://localhost:3000",
-    "[https://fastlab-frontend.netlify.app](https://fastlab-frontend.netlify.app)",
+    "https://fastlab-frontend.netlify.app",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -42,6 +47,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    try:
+        body = await request.json()
+        print(f"--- CUERPO DE LA PETICIÓN INVÁLIDA ---")
+        print(json.dumps(body, indent=2))
+    except Exception as e:
+        print(f"No se pudo parsear el cuerpo de la petición: {e}")
+    
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
 
 # --- DEPENDENCIA DE AUTENTICACIÓN ---
 async def get_current_user(authorization: Optional[str] = Header(None)):
@@ -69,7 +89,6 @@ class ReportDataPayload(BaseModel):
     professor_notes: Optional[Dict[str, Any]] = {}
     specific_results: Optional[List[Dict[str, Any]]] = []
 
-# --- NUEVO MODELO PARA EL ASISTENTE ---
 class AssistantQuery(BaseModel):
     query: str
     context: str
@@ -164,12 +183,8 @@ async def solve_calculation(payload: CalculationQuery, user: dict = Depends(get_
     solution = solve_calculation_query(payload.query)
     return {"solution": solution}
 
-# --- NUEVO ENDPOINT PARA EL ASISTENTE ---
 @app.post("/api/assistant/ask")
 async def ask_assistant(payload: AssistantQuery, user: dict = Depends(get_current_user)):
-    """
-    Recibe una pregunta y el contexto de la práctica para obtener una respuesta del asistente experto.
-    """
     try:
         solution = get_assistant_response(payload.query, payload.context)
         return {"solution": solution}

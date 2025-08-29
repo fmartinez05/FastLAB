@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { askAssistant } from '../api'; // Asegúrate de que la ruta sea correcta
-import './AiAssistant.css'; // Crearemos este archivo para los estilos
 
 const AiAssistant = ({ practiceContext }) => {
   const [isOpen, setIsOpen] = useState(false);

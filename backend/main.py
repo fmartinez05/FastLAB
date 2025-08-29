@@ -1,8 +1,10 @@
 import os
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header, Response
-from fastapi.responses import StreamingResponse
+import json
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header, Response, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict # Importa ConfigDict
+from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
@@ -28,6 +30,25 @@ except Exception as e:
     db = None
 
 app = FastAPI(title="LabNote AI Backend")
+
+# --- NUEVO MANEJADOR DE ERRORES DE VALIDACIÓN ---
+# Esta función se ejecutará cuando ocurra un error 422
+# y nos mostrará en los logs qué datos lo causaron.
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    try:
+        # Intenta obtener el cuerpo del request como JSON
+        body = await request.json()
+        print(f"--- CUERPO DE LA PETICIÓN INVÁLIDA ---")
+        print(json.dumps(body, indent=2))
+    except Exception as e:
+        print(f"No se pudo parsear el cuerpo de la petición: {e}")
+    
+    # Devuelve la respuesta de error 422 estándar
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
 
 # --- MIDDLEWARE DE CORS ---
 origins = [
@@ -58,7 +79,6 @@ class CalculationQuery(BaseModel):
     query: str
 
 class ReportDataPayload(BaseModel):
-    # FIX: Se añade configuración para ignorar campos extra enviados desde el frontend
     model_config = ConfigDict(extra='ignore')
 
     filename: Optional[str] = None
@@ -71,7 +91,7 @@ class ReportDataPayload(BaseModel):
     specific_results: Optional[List[Dict[str, Any]]] = []
 
 
-# --- ENDPOINTS ---
+# --- ENDPOINTS (sin cambios a partir de aquí) ---
 @app.post("/api/analyze-pdf/")
 async def analyze_pdf(file: UploadFile = File(...), user: dict = Depends(get_current_user)):
     user_uid = user['uid']

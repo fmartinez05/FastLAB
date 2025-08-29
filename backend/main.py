@@ -32,7 +32,7 @@ app = FastAPI(title="LabNote AI Backend")
 # --- MIDDLEWARE DE CORS ---
 origins = [
     "http://localhost:3000",
-    "https://fastlab-frontend.netlify.app", # Reemplaza si cambias el nombre en Netlify
+    "https://fastlab-frontend.netlify.app",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -57,15 +57,17 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
 class CalculationQuery(BaseModel):
     query: str
 
+# FIX: Made fields optional to prevent 422 errors on save if frontend sends incomplete data
 class ReportDataPayload(BaseModel):
-    filename: str
-    full_text: str
-    summary: str
-    procedure: List[str]
-    results_prompts: List[str]
-    annotations: List[Dict[str, Any]] = []
-    professor_notes: Dict[str, Any] = {}
-    specific_results: List[Dict[str, Any]] = []
+    filename: Optional[str] = None
+    full_text: Optional[str] = None
+    summary: Optional[str] = None
+    procedure: Optional[List[str]] = None
+    results_prompts: Optional[List[str]] = None
+    annotations: Optional[List[Dict[str, Any]]] = []
+    professor_notes: Optional[Dict[str, Any]] = {}
+    specific_results: Optional[List[Dict[str, Any]]] = []
+
 
 # --- ENDPOINTS ---
 @app.post("/api/analyze-pdf/")
@@ -113,12 +115,8 @@ async def get_user_reports(user: dict = Depends(get_current_user)):
         })
     return {"reports": reports}
 
-# --- ¡NUEVO ENDPOINT PARA BORRAR! ---
 @app.delete("/api/reports/{report_id}")
 async def delete_report(report_id: str, user: dict = Depends(get_current_user)):
-    """
-    Borra un informe específico de la base de datos del usuario.
-    """
     user_uid = user['uid']
     report_ref = db.collection('users').document(user_uid).collection('reports').document(report_id)
 
@@ -143,6 +141,7 @@ async def generate_report_pdf(report_id: str, payload: ReportDataPayload, user: 
         "annotations_drawings": {ann.get("step"): ann.get("drawing") for ann in payload.annotations if ann.get("drawing")}
     }
 
+    # Pass both text content and images to the report generator
     pdf_buffer = create_professional_report(report_content, images)
 
     return StreamingResponse(
@@ -175,5 +174,6 @@ async def save_report(report_id: str, payload: ReportDataPayload, user: dict = D
     if not report_ref.get().exists:
         raise HTTPException(status_code=404, detail="Informe no encontrado.")
 
-    report_ref.update(payload.dict())
+    # Use exclude_unset=True to only update fields that were actually sent by the client
+    report_ref.update(payload.dict(exclude_unset=True))
     return {"message": "Informe actualizado con éxito.", "report_id": report_id}

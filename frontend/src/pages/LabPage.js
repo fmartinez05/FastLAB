@@ -24,12 +24,7 @@ const LabPage = () => {
             setReportData({
                 ...data,
                 annotations: data.annotations || [],
-                // --- CAMBIO CLAVE AQUÍ ---
-                // Nos aseguramos de que professor_notes siempre tenga los campos text y drawing.
-                professor_notes: {
-                    text: data.professor_notes?.text || '',
-                    drawing: data.professor_notes?.drawing || []
-                },
+                professor_notes: data.professor_notes || { text: '' },
                 specific_results: data.specific_results || [],
                 materials: data.materials || {}, // Aseguramos que materials sea un objeto
             });

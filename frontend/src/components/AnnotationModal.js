@@ -2,11 +2,10 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import { Stage, Layer, Path } from 'react-konva';
 import getStroke from 'perfect-freehand';
 
-// --- Funciones de Utilidad (copiadas para mantener el componente autocontenido) ---
+// --- Funciones de Utilidad ---
 
-const options = {
+const baseOptions = {
   size: 8,
-  thinning: 0.65,
   smoothing: 0.5,
   streamline: 0.5,
 };
@@ -25,12 +24,12 @@ function getSvgPathFromStroke(stroke) {
 }
 
 function isPointNearLine(point, line) {
-    const threshold = 15;
-    for (const linePoint of line.points) {
-        const distance = Math.sqrt(Math.pow(linePoint.x - point.x, 2) + Math.pow(linePoint.y - point.y, 2));
-        if (distance < threshold) return true;
-    }
-    return false;
+  const threshold = 15;
+  for (const linePoint of line.points) {
+    const distance = Math.sqrt(Math.pow(linePoint.x - point.x, 2) + Math.pow(linePoint.y - point.y, 2));
+    if (distance < threshold) return true;
+  }
+  return false;
 }
 
 // --- Estilos ---
@@ -58,6 +57,7 @@ const AnnotationModal = ({ step, onSave, onCancel }) => {
   const [currentPoints, setCurrentPoints] = useState([]);
   
   const [tool, setTool] = useState('pen');
+  const pointerType = useRef('pen');
   const isDrawing = useRef(false);
   const stageRef = useRef(null);
   const containerRef = useRef(null);
@@ -76,18 +76,19 @@ const AnnotationModal = ({ step, onSave, onCancel }) => {
 
   const handlePointerDown = (e) => {
     isDrawing.current = true;
+    pointerType.current = e.evt.pointerType;
     const pos = e.target.getStage().getPointerPosition();
     if (tool === 'eraser') {
       for (let i = penStrokes.length - 1; i >= 0; i--) {
         if (isPointNearLine(pos, penStrokes[i])) {
-            setPenStrokes(s => s.filter((_, idx) => i !== idx));
-            return;
+          setPenStrokes(s => s.filter((_, idx) => i !== idx));
+          return;
         }
       }
       for (let i = highlighterStrokes.length - 1; i >= 0; i--) {
         if (isPointNearLine(pos, highlighterStrokes[i])) {
-            setHighlighterStrokes(s => s.filter((_, idx) => i !== idx));
-            return;
+          setHighlighterStrokes(s => s.filter((_, idx) => i !== idx));
+          return;
         }
       }
       return;
@@ -104,9 +105,9 @@ const AnnotationModal = ({ step, onSave, onCancel }) => {
   const handlePointerUp = () => {
     isDrawing.current = false;
     if (currentPoints.length > 1) {
-        const newStroke = { points: currentPoints };
-        if (tool === 'pen') setPenStrokes(s => [...s, newStroke]);
-        else if (tool === 'highlighter') setHighlighterStrokes(s => [...s, newStroke]);
+      const newStroke = { points: currentPoints, type: pointerType.current };
+      if (tool === 'pen') setPenStrokes(s => [...s, newStroke]);
+      else if (tool === 'highlighter') setHighlighterStrokes(s => [...s, newStroke]);
     }
     setCurrentPoints([]);
   };
@@ -116,10 +117,24 @@ const AnnotationModal = ({ step, onSave, onCancel }) => {
     const vectors = { penStrokes, highlighterStrokes };
     onSave({ text, drawing: { vectors, image } });
   };
-
-  const penPaths = penStrokes.map((stroke, i) => <Path key={`p-${i}`} data={getSvgPathFromStroke(getStroke(stroke.points, options))} fill="black" />);
-  const highlighterPaths = highlighterStrokes.map((stroke, i) => <Path key={`h-${i}`} data={getSvgPathFromStroke(getStroke(stroke.points, { ...options, size: 20, thinning: 0 }))} fill="#FFD700" opacity={0.5} globalCompositeOperation="multiply" />);
-  const currentPath = currentPoints.length > 0 ? <Path data={getSvgPathFromStroke(getStroke(currentPoints, tool === 'pen' ? options : { ...options, size: 20, thinning: 0 }))} fill={tool === 'pen' ? 'black' : '#FFD700'} opacity={tool === 'highlighter' ? 0.5 : 1} globalCompositeOperation={tool === 'highlighter' ? 'multiply' : 'source-over'} /> : null;
+  
+  const renderStroke = (stroke, toolType) => {
+    const options = {
+      ...baseOptions,
+      thinning: stroke.type === 'mouse' ? 0 : 0.65,
+    };
+    if (toolType === 'highlighter') {
+      options.size = 20;
+      options.thinning = 0;
+    }
+    return getSvgPathFromStroke(getStroke(stroke.points, options));
+  };
+  
+  const penPaths = penStrokes.map((stroke, i) => <Path key={`p-${i}`} data={renderStroke(stroke, 'pen')} fill="black" />);
+  const highlighterPaths = highlighterStrokes.map((stroke, i) => <Path key={`h-${i}`} data={renderStroke(stroke, 'highlighter')} fill="#FFD700" opacity={0.5} globalCompositeOperation="multiply" />);
+  
+  const currentStrokeForRender = { points: currentPoints, type: pointerType.current };
+  const currentPath = currentPoints.length > 0 ? <Path data={renderStroke(currentStrokeForRender, tool)} fill={tool === 'pen' ? 'black' : '#FFD700'} opacity={tool === 'highlighter' ? 0.5 : 1} globalCompositeOperation={tool === 'highlighter' ? 'multiply' : 'source-over'} /> : null;
 
   return (
     <>
@@ -135,19 +150,12 @@ const AnnotationModal = ({ step, onSave, onCancel }) => {
         />
         <h4>Apuntes a Mano</h4>
         <div style={{ margin: '10px 0' }}>
-            <button style={{...toolButtonStyle, backgroundColor: tool === 'pen' ? '#3182CE' : '#f0f0f0', color: tool === 'pen' ? 'white' : 'black'}} onClick={() => setTool('pen')}>✍️ Lápiz</button>
-            <button style={{...toolButtonStyle, backgroundColor: tool === 'highlighter' ? '#3182CE' : '#f0f0f0', color: tool === 'highlighter' ? 'white' : 'black'}} onClick={() => setTool('highlighter')}>🎨 Resaltador</button>
-            <button style={{...toolButtonStyle, backgroundColor: tool === 'eraser' ? '#3182CE' : '#f0f0f0', color: tool === 'eraser' ? 'white' : 'black'}} onClick={() => setTool('eraser')}>🧼 Borrador</button>
+          <button style={{...toolButtonStyle, backgroundColor: tool === 'pen' ? '#3182CE' : '#f0f0f0', color: tool === 'pen' ? 'white' : 'black'}} onClick={() => setTool('pen')}>✍️ Lápiz</button>
+          <button style={{...toolButtonStyle, backgroundColor: tool === 'highlighter' ? '#3182CE' : '#f0f0f0', color: tool === 'highlighter' ? 'white' : 'black'}} onClick={() => setTool('highlighter')}>🎨 Resaltador</button>
+          <button style={{...toolButtonStyle, backgroundColor: tool === 'eraser' ? '#3182CE' : '#f0f0f0', color: tool === 'eraser' ? 'white' : 'black'}} onClick={() => setTool('eraser')}>🧼 Borrador</button>
         </div>
         <div ref={containerRef} className="drawing-canvas-container">
-          <Stage
-            ref={stageRef}
-            width={size.width}
-            height={size.height}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-          >
+          <Stage ref={stageRef} width={size.width} height={size.height} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
             <Layer>{highlighterPaths}</Layer>
             <Layer>{penPaths}{currentPath}</Layer>
           </Stage>

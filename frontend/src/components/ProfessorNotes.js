@@ -24,8 +24,6 @@ const ProfessorNotes = ({ notes, setNotes }) => {
       img.src = notes.drawing;
       img.onload = () => {
         setImage(img);
-        // Al cargar una imagen, los trazos 'lines' ya no son relevantes
-        // porque están "impresos" en la imagen. Los limpiamos.
         setLines([]); 
       };
     }
@@ -42,17 +40,26 @@ const ProfessorNotes = ({ notes, setNotes }) => {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  // ===== NUEVO CÓDIGO CORREGIDO =====
+  // Este hook se encarga de actualizar el estado del dibujo cada vez que cambia.
+  // Esto reemplaza la necesidad de la función 'saveDrawing' y soluciona el error.
+  useEffect(() => {
+    const updateDrawingState = () => {
+      if (stageRef.current) {
+        const dataURL = stageRef.current.toDataURL();
+        // Usamos una función de callback para no sobrescribir el texto de las notas
+        setNotes(prevNotes => ({ ...prevNotes, drawing: dataURL }));
+      }
+    };
+    // Damos un pequeño tiempo para que el canvas se actualice antes de guardar el estado
+    const timer = setTimeout(updateDrawingState, 100); 
+    return () => clearTimeout(timer);
+  }, [lines, setNotes]); // Se ejecuta cada vez que el array de 'lines' cambia
+
   const handleTextChange = (e) => {
     setNotes({ ...notes, text: e.target.value });
   };
   
-  const saveDrawing = () => {
-    if (stageRef.current) {
-      const dataURL = stageRef.current.toDataURL();
-      setNotes({ ...notes, drawing: dataURL });
-    }
-  };
-
   const handleMouseDown = (e) => {
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
@@ -73,8 +80,6 @@ const ProfessorNotes = ({ notes, setNotes }) => {
 
   const handleMouseUp = () => {
     isDrawing.current = false;
-    // No guardamos automáticamente aquí para que el " deshacer" funcione trazo a trazo
-    // El guardado se hará con el botón principal de la página.
   };
   
   const handleUndo = () => {
@@ -83,9 +88,8 @@ const ProfessorNotes = ({ notes, setNotes }) => {
   
   const handleClear = () => {
       setLines([]);
-      setImage(null); // Borra también la imagen de fondo
-      // Opcional: actualizar el estado para que el borrado se guarde inmediatamente
-      setNotes({ ...notes, drawing: null }); 
+      setImage(null);
+      setNotes(prevNotes => ({ ...prevNotes, drawing: null })); 
   };
 
   return (
@@ -104,7 +108,6 @@ const ProfessorNotes = ({ notes, setNotes }) => {
 
       <h4>Apuntes a Mano (Apple Pencil / Ratón)</h4>
       
-      {/* --- NUEVAS HERRAMIENTAS DE DIBUJO --- */}
       <div style={{ margin: '10px 0' }}>
           <button style={{...toolButtonStyle, backgroundColor: tool === 'pen' ? '#3182CE' : '#f0f0f0', color: tool === 'pen' ? 'white' : 'black'}} onClick={() => setTool('pen')}>✍️ Lápiz</button>
           <button style={{...toolButtonStyle, backgroundColor: tool === 'eraser' ? '#3182CE' : '#f0f0f0', color: tool === 'eraser' ? 'white' : 'black'}} onClick={() => setTool('eraser')}>🧼 Borrador</button>
@@ -130,8 +133,8 @@ const ProfessorNotes = ({ notes, setNotes }) => {
               <Line 
                 key={i} 
                 points={line.points} 
-                stroke={line.tool === 'eraser' ? 'white' : '#2c3e50'} // El color del borrador es el del fondo
-                strokeWidth={line.tool === 'eraser' ? 20 : 3.5} // El borrador es más grueso
+                stroke={line.tool === 'eraser' ? 'white' : '#2c3e50'}
+                strokeWidth={line.tool === 'eraser' ? 20 : 3.5}
                 tension={0.5} 
                 lineCap="round"
                 globalCompositeOperation={
@@ -143,7 +146,7 @@ const ProfessorNotes = ({ notes, setNotes }) => {
         </Stage>
       </div>
       <p style={{fontSize: '0.8rem', color: '#666', textAlign: 'right', marginTop: '5px'}}>
-          Nota: Los dibujos se guardan permanentemente al pulsar "Guardar Progreso".
+          Nota: Los cambios se guardan al pulsar "Guardar Progreso".
       </p>
     </div>
   );

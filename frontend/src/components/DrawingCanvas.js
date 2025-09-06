@@ -13,19 +13,20 @@ const DrawingCanvas = ({ savedDrawing, onSave }) => {
 
   // Efecto para cargar el dibujo guardado cuando el componente aparece
   useEffect(() => {
+    // **CAMBIO IMPORTANTE:**
+    // Solo actuamos si tenemos un dibujo guardado para cargar.
+    // Si 'savedDrawing' no existe, no hacemos nada y dejamos que tldraw
+    // muestre su lienzo vacío por defecto.
     if (app && savedDrawing) {
       try {
         const document = JSON.parse(savedDrawing);
         app.loadDocument(document);
       } catch (error) {
-        console.error("Error al cargar el dibujo:", error);
-        // CAMBIO: Usamos resetDocument() en lugar de newProject()
-        app.resetDocument();
+        console.error("Error al cargar el dibujo guardado:", error);
+        // Si el dibujo guardado está corrupto, no hacemos nada y el usuario verá un lienzo en blanco.
       }
-    } else if (app) {
-      // CAMBIO: Usamos resetDocument() en lugar de newProject()
-      app.resetDocument();
     }
+    // Hemos eliminado el bloque 'else' que llamaba a la función que causaba el error.
   }, [app, savedDrawing]);
 
   // Se activa cada vez que hay un cambio en el lienzo

@@ -17,36 +17,43 @@ const completedStyle = {
 const ProcedureList = ({ steps, annotations, setAnnotations }) => {
   const [modalStep, setModalStep] = useState(null);
 
-  // CORRECCIÓN: Ahora trabajamos con arrays en lugar de objetos
+  // Esta función ya estaba correcta y se mantiene igual
   const handleToggleStep = (index) => {
-    // Creamos una copia del array de anotaciones
     const newAnnotations = [...annotations]; 
     
-    // Si no existe una anotación para este paso, la creamos
     if (!newAnnotations[index]) {
       newAnnotations[index] = { step: steps[index], completed: false, text: '', drawing: null };
     }
     
-    // Cambiamos el estado 'completed'
     newAnnotations[index].completed = !newAnnotations[index].completed;
     setAnnotations(newAnnotations);
   };
 
-  // CORRECCIÓN: La lógica de guardado también se adapta para arrays
-  const handleSaveAnnotation = (annotation) => {
+  // ===== CORRECCIÓN CLAVE AQUÍ =====
+  // Ahora, la función recibe 'annotationData' (que incluye texto y dibujo) y lo guarda todo.
+  const handleSaveAnnotation = (annotationData) => {
     const index = modalStep.index;
     const newAnnotations = [...annotations];
 
-    // Si no existe una anotación para este paso, la creamos
+    // Nos aseguramos de que el objeto de anotación exista en el índice
     if (!newAnnotations[index]) {
-      newAnnotations[index] = { step: steps[index], completed: false, drawing: null };
+      newAnnotations[index] = { step: steps[index], completed: false };
     }
     
-    // Actualizamos el texto de la anotación
-    newAnnotations[index].text = annotation.text;
+    // Fusionamos la data existente (como 'completed') con la nueva data del modal
+    newAnnotations[index] = {
+        ...newAnnotations[index], // Mantiene el estado 'completed' si ya existía
+        text: annotationData.text,
+        drawing: annotationData.drawing // ¡Ahora guardamos el dibujo!
+    };
     
     setAnnotations(newAnnotations);
     setModalStep(null);
+  };
+
+  const handleOpenModal = (step, index) => {
+    // Almacenamos el texto y el índice del paso que se está editando
+    setModalStep({ text: step, index: index });
   };
 
   return (
@@ -61,7 +68,7 @@ const ProcedureList = ({ steps, annotations, setAnnotations }) => {
           />
           <span style={{ flexGrow: 1 }}>{step}</span>
           <button
-            onClick={() => setModalStep({ text: step, index: index })}
+            onClick={() => handleOpenModal(step, index)}
             style={{ fontSize: '0.8rem', padding: '5px 10px', background: '#ecf0f1', color: '#333' }}
           >
             Anotar
@@ -70,6 +77,7 @@ const ProcedureList = ({ steps, annotations, setAnnotations }) => {
       ))}
       {modalStep && (
         <AnnotationModal
+          // Pasamos la anotación existente (si la hay) al modal para que pueda mostrarla
           step={{ text: modalStep.text, annotation: annotations[modalStep.index] }}
           onSave={handleSaveAnnotation}
           onCancel={() => setModalStep(null)}

@@ -515,3 +515,12 @@ input[type="file"]::file-selector-button:hover {
   background-color: #A0AEC0;
   cursor: not-allowed;
 }
+
+/* ===== NUEVO ESTILO PARA EL LIENZO DE DIBUJO ===== */
+.drawing-canvas-container {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box; /* Asegura que el borde no añada tamaño extra */
+  touch-action: none; /* La clave para evitar el scroll en iPad */
+}

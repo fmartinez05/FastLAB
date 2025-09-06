@@ -1,13 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-// CAMBIO: Hemos eliminado 'useFileSystem' de esta línea de importación
+// La importación de 'useFileSystem' ha sido eliminada
 import { Tldraw, TldrawApp } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 
 // Este componente envuelve tldraw y maneja la carga y guardado de datos.
 const DrawingCanvas = ({ savedDrawing, onSave }) => {
   const [app, setApp] = useState(null);
-  
-  // CAMBIO: La siguiente línea que usaba 'useFileSystem' ha sido eliminada.
 
   // Callback para guardar la instancia de la app de tldraw
   const handleMount = useCallback((tldrawApp) => {
@@ -48,4 +46,5 @@ const DrawingCanvas = ({ savedDrawing, onSave }) => {
   );
 };
 
-export export default DrawingCanvas;
+// **LA CORRECCIÓN ESTÁ AQUÍ**
+export default DrawingCanvas;

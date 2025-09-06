@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-// **CAMBIO: Hemos eliminado 'TldrawApp' de esta línea**
 import { Tldraw } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 
@@ -20,10 +19,12 @@ const DrawingCanvas = ({ savedDrawing, onSave }) => {
         app.loadDocument(document);
       } catch (error) {
         console.error("Error al cargar el dibujo:", error);
-        app.newProject();
+        // CAMBIO: Usamos resetDocument() en lugar de newProject()
+        app.resetDocument();
       }
     } else if (app) {
-      app.newProject();
+      // CAMBIO: Usamos resetDocument() en lugar de newProject()
+      app.resetDocument();
     }
   }, [app, savedDrawing]);
 

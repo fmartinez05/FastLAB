@@ -9,6 +9,11 @@ from typing import List, Dict, Any, Optional
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
 
+# --- NUEVO: Importaciones para el procesamiento de SVG y Base64 ---
+import cairosvg
+import base64
+from io import BytesIO
+
 # --- IMPORTACIONES DEL PROYECTO ---
 from core.pdf_parser import extract_text_from_pdf
 from core.ai_processor import (
@@ -33,9 +38,6 @@ except Exception as e:
 app = FastAPI(title="LabNote AI Backend")
 
 # --- MIDDLEWARE DE CORS ---
-# Esta es la sección clave. Debe estar bien configurada y al principio.
-# "allow_methods" y "allow_headers" con "*" son cruciales para que
-# la solicitud de permiso OPTIONS funcione correctamente.
 origins = [
     "http://localhost:3000",
     "https://fastlab-frontend.netlify.app",
@@ -92,6 +94,24 @@ class ReportDataPayload(BaseModel):
 class AssistantQuery(BaseModel):
     query: str
     context: str
+
+# --- NUEVO: Función auxiliar para convertir SVG a imagen Base64 ---
+def convert_svg_to_base64_png(svg_string: str) -> Optional[str]:
+    """Convierte un string SVG a una imagen PNG en formato Base64 Data URI."""
+    if not svg_string or not isinstance(svg_string, str) or not svg_string.strip().startswith('<svg'):
+        return None
+    try:
+        # Convierte el string SVG a bytes PNG
+        png_bytes = cairosvg.svg2png(bytestring=svg_string.encode('utf-8'))
+        
+        # Codifica los bytes a Base64
+        base64_string = base64.b64encode(png_bytes).decode('utf-8')
+        
+        # Devuelve el formato completo Data URI, que es lo que espera el generador de PDF
+        return f"data:image/png;base64,{base64_string}"
+    except Exception as e:
+        print(f"Error al convertir SVG a PNG: {e}")
+        return None
 
 # --- ENDPOINTS ---
 @app.post("/api/analyze-pdf/")
@@ -152,16 +172,38 @@ async def delete_report(report_id: str, user: dict = Depends(get_current_user)):
 
 @app.post("/api/reports/{report_id}/generate-pdf")
 async def generate_report_pdf(report_id: str, payload: ReportDataPayload, user: dict = Depends(get_current_user)):
+    
+    # --- LÓGICA DE PROCESAMIENTO DE IMAGEN ACTUALIZADA ---
+    images = {}
+    
+    # Procesa el dibujo de las notas del profesor
+    prof_notes_drawing_data = payload.professor_notes.get("drawing", {})
+    if isinstance(prof_notes_drawing_data, dict):
+        svg_data = prof_notes_drawing_data.get("svg")
+        if svg_data:
+            images["professor_notes_drawing"] = convert_svg_to_base64_png(svg_data)
+        else: # Fallback a la imagen pre-renderizada si no hay SVG
+            images["professor_notes_drawing"] = prof_notes_drawing_data.get("image")
+            
+    # Procesa los dibujos de las anotaciones
+    annotations_drawings = {}
+    for ann in payload.annotations:
+        ann_drawing_data = ann.get("drawing", {})
+        if isinstance(ann_drawing_data, dict):
+            svg_data = ann_drawing_data.get("svg")
+            if svg_data:
+                annotations_drawings[ann.get("step")] = convert_svg_to_base64_png(svg_data)
+            else:
+                annotations_drawings[ann.get("step")] = ann_drawing_data.get("image")
+    images["annotations_drawings"] = annotations_drawings
+
     report_content = get_full_report_content(
         payload.full_text,
         payload.annotations,
         payload.professor_notes,
         payload.specific_results
     )
-    images = {
-        "professor_notes_drawing": payload.professor_notes.get("drawing"),
-        "annotations_drawings": {ann.get("step"): ann.get("drawing") for ann in payload.annotations if ann.get("drawing")}
-    }
+    
     pdf_buffer = create_professional_report(report_content, images)
     return StreamingResponse(
         iter([pdf_buffer.getvalue()]),
@@ -197,5 +239,9 @@ async def save_report(report_id: str, payload: ReportDataPayload, user: dict = D
     report_ref = db.collection('users').document(user_uid).collection('reports').document(report_id)
     if not report_ref.get().exists:
         raise HTTPException(status_code=404, detail="Informe no encontrado.")
-    report_ref.update(payload.dict(exclude_unset=True))
+    
+    # Usamos `model_dump()` con `exclude_unset=True` para Pydantic v2
+    update_data = payload.model_dump(exclude_unset=True)
+    report_ref.update(update_data)
+    
     return {"message": "Informe actualizado con éxito.", "report_id": report_id}

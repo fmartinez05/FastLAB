@@ -2,9 +2,10 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import { Stage, Layer, Path } from 'react-konva';
 import getStroke from 'perfect-freehand';
 
-// --- Funciones de Utilidad para el Dibujo Vectorial ---
+// --- Funciones de Utilidad y Configuración ---
 
-const baseOptions = {
+// **CAMBIO IMPORTANTE**: Eliminamos 'thinning' de las opciones base para asegurar un grosor visible.
+const options = {
   size: 8,
   smoothing: 0.5,
   streamline: 0.5,
@@ -47,7 +48,6 @@ const ProfessorNotes = ({ notes, setNotes }) => {
   const [currentPoints, setCurrentPoints] = useState([]);
   
   const [tool, setTool] = useState('pen');
-  const pointerType = useRef('pen'); // Para detectar si es ratón o lápiz
   const isDrawing = useRef(false);
   const stageRef = useRef(null);
   const containerRef = useRef(null);
@@ -73,7 +73,6 @@ const ProfessorNotes = ({ notes, setNotes }) => {
 
   const handlePointerDown = (e) => {
     isDrawing.current = true;
-    pointerType.current = e.evt.pointerType; // Capturamos el tipo de dispositivo
     const pos = e.target.getStage().getPointerPosition();
     
     if (tool === 'eraser') {
@@ -91,20 +90,19 @@ const ProfessorNotes = ({ notes, setNotes }) => {
       }
       return;
     }
-    setCurrentPoints([{ x: pos.x, y: pos.y, pressure: e.evt.pressure || 0.5 }]);
+    setCurrentPoints([{ x: pos.x, y: pos.y, pressure: 0.5 }]); // Usamos presión constante
   };
 
   const handlePointerMove = (e) => {
     if (!isDrawing.current || tool === 'eraser') return;
     const pos = e.target.getStage().getPointerPosition();
-    setCurrentPoints(points => [...points, { x: pos.x, y: pos.y, pressure: e.evt.pressure || 0.5 }]);
+    setCurrentPoints(points => [...points, { x: pos.x, y: pos.y, pressure: 0.5 }]); // Usamos presión constante
   };
 
   const handlePointerUp = () => {
     isDrawing.current = false;
     if (currentPoints.length > 1) {
-      // Guardamos el trazo junto con el tipo de dispositivo que lo dibujó
-      const newStroke = { points: currentPoints, type: pointerType.current };
+      const newStroke = { points: currentPoints };
       if (tool === 'pen') {
         setPenStrokes(strokes => [...strokes, newStroke]);
       } else if (tool === 'highlighter') {
@@ -124,31 +122,13 @@ const ProfessorNotes = ({ notes, setNotes }) => {
     setTimeout(saveChanges, 10);
   };
 
-  // --- Lógica de Renderizado de Trazos ---
-
-  const renderStroke = (stroke, toolType) => {
-    // **LA CORRECCIÓN CLAVE ESTÁ AQUÍ**
-    const options = {
-      ...baseOptions,
-      // Si el trazo se hizo con ratón ('mouse'), desactivamos el 'thinning'.
-      // Si se hizo con lápiz ('pen'), lo activamos para un efecto natural.
-      thinning: stroke.type === 'mouse' ? 0 : 0.65,
-    };
-
-    if (toolType === 'highlighter') {
-      options.size = 20;
-      options.thinning = 0; // El resaltador siempre tiene grosor uniforme
-    }
-    
-    return getSvgPathFromStroke(getStroke(stroke.points, options));
-  };
-
-  const penPaths = penStrokes.map((stroke, i) => <Path key={`p-${i}`} data={renderStroke(stroke, 'pen')} fill="black" />);
-  const highlighterPaths = highlighterStrokes.map((stroke, i) => <Path key={`h-${i}`} data={renderStroke(stroke, 'highlighter')} fill="#FFD700" opacity={0.5} globalCompositeOperation="multiply" />);
+  // --- Lógica de Renderizado de Trazos (Simplificada) ---
+  const penPaths = penStrokes.map((stroke, i) => <Path key={`p-${i}`} data={getSvgPathFromStroke(getStroke(stroke.points, options))} fill="black" />);
+  const highlighterPaths = highlighterStrokes.map((stroke, i) => <Path key={`h-${i}`} data={getSvgPathFromStroke(getStroke(stroke.points, {...options, size: 20}))} fill="#FFD700" opacity={0.5} globalCompositeOperation="multiply" />);
   
-  const currentStrokeForRender = { points: currentPoints, type: pointerType.current };
+  const currentPathOptions = tool === 'highlighter' ? {...options, size: 20} : options;
   const currentPath = currentPoints.length > 0
-    ? <Path data={renderStroke(currentStrokeForRender, tool)} fill={tool === 'pen' ? 'black' : '#FFD700'} opacity={tool === 'highlighter' ? 0.5 : 1} globalCompositeOperation={tool === 'highlighter' ? 'multiply' : 'source-over'} />
+    ? <Path data={getSvgPathFromStroke(getStroke(currentPoints, currentPathOptions))} fill={tool === 'pen' ? 'black' : '#FFD700'} opacity={tool === 'highlighter' ? 0.5 : 1} globalCompositeOperation={tool === 'highlighter' ? 'multiply' : 'source-over'} />
     : null;
 
   return (

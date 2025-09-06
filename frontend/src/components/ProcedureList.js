@@ -1,86 +1,92 @@
 import React, { useState } from 'react';
 import AnnotationModal from './AnnotationModal';
 
-const listItemStyle = {
-  display: 'flex', alignItems: 'center', marginBottom: '10px',
-  padding: '10px', borderRadius: '5px', transition: 'background-color 0.3s',
-  border: '1px solid #eee'
+const procedureItemStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '1rem',
+  border: '1px solid #E2E8F0',
+  borderRadius: '8px',
+  marginBottom: '0.75rem',
+  gap: '1rem',
 };
 
-const completedStyle = {
-  ...listItemStyle,
-  backgroundColor: '#eafaf1',
-  textDecoration: 'line-through',
-  color: '#555'
+const procedureTextStyle = {
+  flexGrow: 1,
+  lineHeight: '1.5',
 };
 
 const ProcedureList = ({ steps, annotations, setAnnotations }) => {
-  const [modalStep, setModalStep] = useState(null);
-
-  // Esta función ya estaba correcta y se mantiene igual
-  const handleToggleStep = (index) => {
-    const newAnnotations = [...annotations]; 
-    
-    if (!newAnnotations[index]) {
-      newAnnotations[index] = { step: steps[index], completed: false, text: '', drawing: null };
-    }
-    
-    newAnnotations[index].completed = !newAnnotations[index].completed;
-    setAnnotations(newAnnotations);
-  };
-
-  // ===== CORRECCIÓN CLAVE AQUÍ =====
-  // Ahora, la función recibe 'annotationData' (que incluye texto y dibujo) y lo guarda todo.
-  const handleSaveAnnotation = (annotationData) => {
-    const index = modalStep.index;
-    const newAnnotations = [...annotations];
-
-    // Nos aseguramos de que el objeto de anotación exista en el índice
-    if (!newAnnotations[index]) {
-      newAnnotations[index] = { step: steps[index], completed: false };
-    }
-    
-    // Fusionamos la data existente (como 'completed') con la nueva data del modal
-    newAnnotations[index] = {
-        ...newAnnotations[index], // Mantiene el estado 'completed' si ya existía
-        text: annotationData.text,
-        drawing: annotationData.drawing // ¡Ahora guardamos el dibujo!
-    };
-    
-    setAnnotations(newAnnotations);
-    setModalStep(null);
-  };
+  const [editingStep, setEditingStep] = useState(null);
 
   const handleOpenModal = (step, index) => {
-    // Almacenamos el texto y el índice del paso que se está editando
-    setModalStep({ text: step, index: index });
+    // Busca si ya existe una anotación para este paso
+    const existingAnnotation = annotations.find(ann => ann.step === index);
+    setEditingStep({ 
+      text: step, 
+      index: index, 
+      // Pasa la anotación existente o un objeto vacío al modal
+      annotation: existingAnnotation || { text: '', drawing: null } 
+    });
+  };
+
+  const handleCancel = () => {
+    setEditingStep(null);
+  };
+
+  // ===== LA CORRECCIÓN CLAVE ESTÁ AQUÍ =====
+  const handleSaveAnnotation = (annotationData) => {
+    const stepIndex = editingStep.index;
+
+    // Filtramos las anotaciones para quitar la versión vieja de la que estamos editando
+    const otherAnnotations = annotations.filter(ann => ann.step !== stepIndex);
+
+    // Creamos la nueva anotación actualizada, asegurando que tenga el 'step' correcto
+    const newAnnotation = {
+      ...annotationData, // Esto incluye el 'text' y el 'drawing' del modal
+      step: stepIndex,
+    };
+
+    // Volvemos a juntar la lista y la ordenamos para mantener la consistencia
+    const updatedAnnotations = [...otherAnnotations, newAnnotation].sort((a, b) => a.step - b.step);
+    
+    // Actualizamos el estado principal en LabPage.js
+    setAnnotations(updatedAnnotations);
+    setEditingStep(null); // Cerramos el modal
   };
 
   return (
     <div>
-      {steps.map((step, index) => (
-        <div key={index} style={annotations[index]?.completed ? completedStyle : listItemStyle}>
-          <input
-            type="checkbox"
-            checked={annotations[index]?.completed || false}
-            onChange={() => handleToggleStep(index)}
-            style={{ marginRight: '15px', transform: 'scale(1.5)' }}
-          />
-          <span style={{ flexGrow: 1 }}>{step}</span>
-          <button
-            onClick={() => handleOpenModal(step, index)}
-            style={{ fontSize: '0.8rem', padding: '5px 10px', background: '#ecf0f1', color: '#333' }}
-          >
-            Anotar
-          </button>
-        </div>
-      ))}
-      {modalStep && (
+      {steps.map((step, index) => {
+        // Buscamos si existe una anotación para este paso para darle estilo al botón
+        const annotation = annotations.find(ann => ann.step === index);
+        const hasAnnotation = annotation && (annotation.text || annotation.drawing);
+
+        return (
+          <div key={index} style={procedureItemStyle}>
+            <span style={{fontWeight: 'bold', fontSize: '1.2rem', color: '#3182CE'}}>
+              {index + 1}
+            </span>
+            <p style={procedureTextStyle}>{step}</p>
+            <button 
+              onClick={() => handleOpenModal(step, index)}
+              style={{
+                backgroundColor: hasAnnotation ? '#38A169' : '#5c6bc0', // Verde si ya tiene anotación
+                flexShrink: 0 
+              }}
+            >
+              {hasAnnotation ? '📝 Editar Anotación' : '➕ Añadir Anotación'}
+            </button>
+          </div>
+        );
+      })}
+
+      {editingStep && (
         <AnnotationModal
-          // Pasamos la anotación existente (si la hay) al modal para que pueda mostrarla
-          step={{ text: modalStep.text, annotation: annotations[modalStep.index] }}
+          step={editingStep}
           onSave={handleSaveAnnotation}
-          onCancel={() => setModalStep(null)}
+          onCancel={handleCancel}
         />
       )}
     </div>

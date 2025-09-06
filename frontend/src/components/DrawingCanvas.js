@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Tldraw, TldrawApp, useFileSystem } from '@tldraw/tldraw';
+// CAMBIO: Hemos eliminado 'useFileSystem' de esta línea de importación
+import { Tldraw, TldrawApp } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 
 // Este componente envuelve tldraw y maneja la carga y guardado de datos.
 const DrawingCanvas = ({ savedDrawing, onSave }) => {
   const [app, setApp] = useState(null);
-  const fileSystem = useFileSystem();
+  
+  // CAMBIO: La siguiente línea que usaba 'useFileSystem' ha sido eliminada.
 
   // Callback para guardar la instancia de la app de tldraw
   const handleMount = useCallback((tldrawApp) => {
@@ -16,12 +18,11 @@ const DrawingCanvas = ({ savedDrawing, onSave }) => {
   useEffect(() => {
     if (app && savedDrawing) {
       try {
-        // tldraw guarda su estado como un "snapshot" o "documento"
         const document = JSON.parse(savedDrawing);
         app.loadDocument(document);
       } catch (error) {
         console.error("Error al cargar el dibujo:", error);
-        app.newProject(); // Si hay error, crea un proyecto nuevo
+        app.newProject();
       }
     } else if (app) {
       app.newProject();
@@ -30,7 +31,6 @@ const DrawingCanvas = ({ savedDrawing, onSave }) => {
 
   // Se activa cada vez que hay un cambio en el lienzo
   const handleChange = (tldrawApp) => {
-    // Guardamos el estado completo del lienzo como un string JSON
     const drawingState = JSON.stringify(tldrawApp.document);
     onSave(drawingState);
   };
@@ -40,12 +40,12 @@ const DrawingCanvas = ({ savedDrawing, onSave }) => {
       <Tldraw
         onMount={handleMount}
         onChange={handleChange}
-        showUI={true} // Muestra la barra de herramientas profesional
-        showPages={false} // Ocultamos la paginación para simplificar
-        showMenu={false} // Ocultamos el menú principal para simplificar
+        showUI={true}
+        showPages={false}
+        showMenu={false}
       />
     </div>
   );
 };
 
-export default DrawingCanvas;
+export export default DrawingCanvas;

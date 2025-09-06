@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import DrawingCanvas from './DrawingCanvas'; // Reutilizamos nuestro componente
+import React, { useState, useRef } from 'react'; // Añadimos useRef
+import DrawingCanvas from './DrawingCanvas';
 
 const modalStyle = {
   position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -13,19 +13,23 @@ const overlayStyle = {
 };
 
 const AnnotationModal = ({ step, onSave, onCancel }) => {
-  // Estado local para manejar los cambios antes de guardar
-  const [annotation, setAnnotation] = useState(step.annotation || { text: '', drawing: null });
-
-  const handleTextChange = (e) => {
-    setAnnotation({ ...annotation, text: e.target.value });
-  };
-
-  const handleDrawingSave = (drawingState) => {
-    setAnnotation({ ...annotation, drawing: drawingState });
-  };
+  const [text, setText] = useState(step.annotation?.text || '');
+  const drawingCanvasRef = useRef(null); // Creamos una ref para acceder al DrawingCanvas
 
   const handleSave = () => {
-    onSave(annotation);
+    // Obtenemos el estado MÁS RECIENTE del dibujo directamente del componente hijo
+    const latestDrawingState = drawingCanvasRef.current?.getLatestDrawingState();
+    
+    // Guardamos el texto y el estado del dibujo
+    onSave({ 
+        text: text, 
+        drawing: latestDrawingState || step.annotation?.drawing // Mantiene el dibujo anterior si no se ha cambiado
+    });
+  };
+
+  // Esta función es necesaria para el 'onChange' de DrawingCanvas, aunque no la usemos directamente para el guardado final
+  const handleIntermediateDrawingSave = () => {
+      // No necesitamos hacer nada aquí porque el guardado final se hace con el botón
   };
 
   return (
@@ -34,16 +38,17 @@ const AnnotationModal = ({ step, onSave, onCancel }) => {
       <div style={modalStyle}>
         <h3>Anotaciones para: "{step.text}"</h3>
         <textarea
-          value={annotation.text}
-          onChange={handleTextChange}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
           rows="5"
           style={{ width: '100%', boxSizing: 'border-box', padding: '10px', marginBottom: '1rem' }}
           placeholder="Escribe tus resultados, observaciones, etc."
         />
         <h4>Apuntes a Mano</h4>
         <DrawingCanvas 
-            savedDrawing={annotation.drawing}
-            onSave={handleDrawingSave}
+            ref={drawingCanvasRef} // Asignamos la ref
+            savedDrawing={step.annotation?.drawing}
+            onSave={handleIntermediateDrawingSave}
         />
         <div style={{ marginTop: '20px', textAlign: 'right' }}>
           <button onClick={onCancel} style={{ marginRight: '10px', backgroundColor: '#95a5a6' }}>Cancelar</button>

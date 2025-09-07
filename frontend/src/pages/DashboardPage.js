@@ -94,6 +94,7 @@ const DashboardPage = () => {
                     </div>
                 </section>
             </div>
+            <Footer />
         </>
     );
 };

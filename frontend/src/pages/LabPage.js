@@ -160,6 +160,7 @@ const LabPage = () => {
             </div>
 	{/* -- 2. AÑADIR EL COMPONENTE DEL ASISTENTE AQUÍ -- */}
             <AiAssistant practiceContext={reportData.full_text} />
+	    <Footer />
         </>
     );
 };

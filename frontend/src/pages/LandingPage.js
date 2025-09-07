@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginWithGoogle } from '../utils/auth';
+import Footer from '../components/Footer';
 
 const LandingPage = () => {
   const navigate = useNavigate();

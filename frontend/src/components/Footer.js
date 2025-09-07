@@ -69,12 +69,12 @@ const Footer = () => {
 
                         {/* Sección Logo/Nombre */}
                         <div className="footer-section logo-section">
-                            <h2>FastLab</h2>
+                            <h2>LabNote</h2>
                             <p>Soluciones de software a medida.</p>
                         </div>
                     </div>
                     <div className="footer-copyright">
-                        <p>&copy; {currentYear} FastLab - Todos los derechos reservados.</p>
+                        <p>&copy; {currentYear} LabNote - Todos los derechos reservados.</p>
                     </div>
                 </div>
             </footer>
@@ -91,10 +91,10 @@ const Footer = () => {
                         <div className="modal-body">
                            <p><strong>Última actualización:</strong> {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
 
-                            <p>En FastLab, nos comprometemos a proteger y respetar su privacidad. Esta política establece las bases sobre las cuales cualquier dato personal que recopilemos de usted, o que usted nos proporcione, será procesado por nosotros.</p>
+                            <p>En LabNote, nos comprometemos a proteger y respetar su privacidad. Esta política establece las bases sobre las cuales cualquier dato personal que recopilemos de usted, o que usted nos proporcione, será procesado por nosotros.</p>
 
                             <h4>1. Responsable del Tratamiento</h4>
-                            <p>El responsable del tratamiento de sus datos es Francisco Martínez del Águila (en adelante, "FastLab").</p>
+                            <p>El responsable del tratamiento de sus datos es Francisco Martínez del Águila (en adelante, "LabNote").</p>
 
                             <h4>2. Normativa Aplicable</h4>
                             <p>Este sitio web se adhiere estrictamente a la legislación vigente en materia de protección de datos para garantizar la seguridad, integridad y confidencialidad de los datos personales de los usuarios. La normativa de referencia incluye:</p>
@@ -103,7 +103,7 @@ const Footer = () => {
                                 <li><strong>Ley Orgánica 3/2018, de 5 de diciembre</strong>, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD).</li>
                                 <li><strong>Ley 34/2002, de 11 de julio</strong>, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE).</li>
                             </ul>
-                            <p>FastLab cumple y se compromete con el cumplimiento de esta normativa, sin perjuicio del deber de cumplimiento de otras normativas específicas o sectoriales no mencionadas.</p>
+                            <p>LabNote cumple y se compromete con el cumplimiento de esta normativa, sin perjuicio del deber de cumplimiento de otras normativas específicas o sectoriales no mencionadas.</p>
                              <h4>3. Finalidad del Tratamiento de Datos</h4>
                              <p>Los datos personales que podamos recopilar a través de formularios de contacto o correo electrónico serán utilizados exclusivamente para:</p>
                              <ul>
@@ -119,10 +119,10 @@ const Footer = () => {
                              <p>Los datos se conservarán durante el tiempo estrictamente necesario para cumplir con la finalidad para la que fueron recabados y para determinar las posibles responsabilidades que se pudieran derivar de dicha finalidad.</p>
 
                              <h4>6. Derechos de los Interesados</h4>
-                             <p>Usted tiene derecho a obtener confirmación sobre si en FastLab estamos tratando sus datos personales. Asimismo, tiene derecho a acceder a sus datos personales, solicitar la rectificación de los datos inexactos o, en su caso, solicitar su supresión cuando, entre otros motivos, los datos ya no sean necesarios para los fines que fueron recogidos. Podrá ejercer dichos derechos contactándonos a través de los medios indicados en este sitio web.</p>
+                             <p>Usted tiene derecho a obtener confirmación sobre si en LabNote estamos tratando sus datos personales. Asimismo, tiene derecho a acceder a sus datos personales, solicitar la rectificación de los datos inexactos o, en su caso, solicitar su supresión cuando, entre otros motivos, los datos ya no sean necesarios para los fines que fueron recogidos. Podrá ejercer dichos derechos contactándonos a través de los medios indicados en este sitio web.</p>
 
                              <h4>7. Seguridad de los Datos</h4>
-                             <p>FastLab adopta los niveles de seguridad requeridos por el RGPD adecuados a la naturaleza de los datos que son objeto de tratamiento en cada momento, garantizando la confidencialidad, integridad y disponibilidad de los mismos.</p>
+                             <p>LabNote adopta los niveles de seguridad requeridos por el RGPD adecuados a la naturaleza de los datos que son objeto de tratamiento en cada momento, garantizando la confidencialidad, integridad y disponibilidad de los mismos.</p>
 
                              <h4>8. Cambios en la Política de Privacidad</h4>
                              <p>Nos reservamos el derecho a modificar la presente política para adaptarla a novedades legislativas o jurisprudenciales. En dichos supuestos, se anunciarán en esta página los cambios introducidos con razonable antelación a su puesta en práctica.</p>

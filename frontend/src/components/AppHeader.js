@@ -14,10 +14,10 @@ const AppHeader = () => {
 
   return (
     <header className="app-header">
-      {/* MODIFICACIÓN: El logo ahora te lleva al dashboard al hacer clic. */}
+      {/* MODIFICACIÓN: La navegación ahora apunta a "/" (la portada) en lugar de "/dashboard". */}
       <div 
         className="app-logo-container" 
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate('/')}
         style={{ cursor: 'pointer' }}
       >
         <img src="/fastlab_logo.png" alt="FastLAB Logo" className="app-logo" />

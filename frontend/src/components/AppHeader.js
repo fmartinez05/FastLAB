@@ -4,7 +4,7 @@ import { logout } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 
 const AppHeader = () => {
-  const { currentUser } = useAuth(); // Ahora sí se usa
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -14,12 +14,16 @@ const AppHeader = () => {
 
   return (
     <header className="app-header">
-      <div className="app-logo-container">
+      {/* MODIFICACIÓN: El logo ahora te lleva al dashboard al hacer clic. */}
+      <div 
+        className="app-logo-container" 
+        onClick={() => navigate('/dashboard')}
+        style={{ cursor: 'pointer' }}
+      >
         <img src="/fastlab_logo.png" alt="FastLAB Logo" className="app-logo" />
         <span>LabNote</span>
       </div>
       <div className="user-controls">
-        {/* --- CORRECCIÓN AQUÍ: Mostramos el nombre del usuario --- */}
         {currentUser && <span>{currentUser.displayName}</span>}
         <button onClick={handleLogout}>
           Cerrar Sesión

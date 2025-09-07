@@ -18,7 +18,12 @@ const LandingPage = () => {
     <div className="landing-container">
       {/* Barra de Navegación Superior */}
       <nav className="landing-nav">
-        <div className="landing-logo-container">
+        {/* MODIFICACIÓN: El logo ahora es un botón para recargar la página de inicio. */}
+        <div 
+          className="landing-logo-container" 
+          onClick={() => navigate('/')} 
+          style={{ cursor: 'pointer' }}
+        >
           <img src="/fastlab_logo.png" alt="FastLAB Logo" className="landing-logo" />
           <span>LabNote</span>
         </div>

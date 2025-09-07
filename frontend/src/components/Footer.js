@@ -52,7 +52,7 @@ const Footer = () => {
                         <div className="footer-section">
                             <h3>Fundador</h3>
                             <p>Francisco Martínez del Águila</p>
-                            <p className="founder-description">Desarrollador de software apasionado por crear soluciones tecnológicas eficientes y escalables.</p>
+                            <p className="founder-description">Estudiante de Bioquímica en la Universidad de Granada</p>
                             <a href="https://www.linkedin.com/in/francisco-martinez-del-aguila-758873318/" target="_blank" rel="noopener noreferrer" className="footer-link">
                                 <LinkedInIcon />
                                 <span>Perfil de LinkedIn</span>
@@ -70,7 +70,7 @@ const Footer = () => {
                         {/* Sección Logo/Nombre */}
                         <div className="footer-section logo-section">
                             <h2>LabNote</h2>
-                            <p>Soluciones de software a medida.</p>
+                            <p>Solución inmediata para ciencias</p>
                         </div>
                     </div>
                     <div className="footer-copyright">

@@ -8,6 +8,7 @@ import ProcedureList from '../components/ProcedureList';
 import ResultsAnnotation from '../components/ResultsAnnotation';
 import AppHeader from '../components/AppHeader';
 import AiAssistant from '../components/AiAssistant';
+import Footer from '../components/Footer';
 
 const LabPage = () => {
     const { reportId } = useParams();

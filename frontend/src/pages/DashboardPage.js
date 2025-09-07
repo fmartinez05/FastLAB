@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uploadPDF, getUserReports, deleteReport } from '../api'; // Importamos deleteReport
 import AppHeader from '../components/AppHeader';
+import Footer from '../components/Footer';
 
 const DashboardPage = () => {
     const navigate = useNavigate();

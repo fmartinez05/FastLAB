@@ -41,6 +41,8 @@ app = FastAPI(title="LabNote AI Backend")
 origins = [
     "http://localhost:3000",
     "https://fastlab-frontend.netlify.app",
+    "https://labnote.es",
+    "https://www.labnote.es",
 ]
 app.add_middleware(
     CORSMiddleware,

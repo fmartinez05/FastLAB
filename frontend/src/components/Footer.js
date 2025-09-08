@@ -65,9 +65,13 @@ const Footer = () => {
                             <button onClick={toggleModal} className="footer-link-button">
                                 Políticas de Privacidad
                             </button>
-                            {/* --- CORRECCIÓN: Enlace del Blog movido a su lugar correcto --- */}
+                        </div>
+
+                        {/* Sección Blog (MODIFICADO) */}
+                        <div className="footer-section">
+                            <h3>Blog</h3>
                             <a href="/blog" className="footer-link-button">
-                                Blog
+                                Ver Artículos
                             </a>
                         </div>
 

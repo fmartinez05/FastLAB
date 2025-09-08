@@ -7,7 +7,7 @@ import LabPage from './pages/LabPage';
 import PrivateRoute from './components/PrivateRoute';
 
 // --- 1. AÑADE LA IMPORTACIÓN DE LAS NUEVAS PÁGINAS DEL BLOG ---
-import BlogPage from './pages/BlogPage';
+import blogContent from './blog/blogContent';
 import ArticlePage from './pages/ArticlePage';
 
 function App() {
@@ -35,7 +35,7 @@ function App() {
           />
 
           {/* --- 2. AÑADE LAS DOS NUEVAS RUTAS PARA EL BLOG --- */}
-          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog" element={<blogContent />} />
           <Route path="/blog/:slug" element={<ArticlePage />} />
 
         </Routes>

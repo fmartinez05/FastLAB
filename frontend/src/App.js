@@ -6,11 +6,16 @@ import DashboardPage from './pages/DashboardPage';
 import LabPage from './pages/LabPage';
 import PrivateRoute from './components/PrivateRoute';
 
+// --- 1. AÑADE LA IMPORTACIÓN DE LAS NUEVAS PÁGINAS DEL BLOG ---
+import BlogPage from './pages/BlogPage';
+import ArticlePage from './pages/ArticlePage';
+
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          {/* --- Tus rutas existentes no cambian --- */}
           <Route path="/" element={<LandingPage />} />
           <Route 
             path="/dashboard" 
@@ -28,6 +33,11 @@ function App() {
               </PrivateRoute>
             } 
           />
+
+          {/* --- 2. AÑADE LAS DOS NUEVAS RUTAS PARA EL BLOG --- */}
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<ArticlePage />} />
+
         </Routes>
       </Router>
     </AuthProvider>

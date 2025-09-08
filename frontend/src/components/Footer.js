@@ -87,6 +87,9 @@ const Footer = () => {
                             <button onClick={toggleModal} className="modal-close-button">
                                 <CloseIcon />
                             </button>
+                            <a href="/blog" className="footer-link-button">
+      				Blog
+                            </a>
                         </div>
                         <div className="modal-body">
                            <p><strong>Última actualización:</strong> {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</p>

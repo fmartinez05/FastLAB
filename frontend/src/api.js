@@ -1,15 +1,23 @@
 import axios from 'axios';
 import { auth } from './firebase-config';
 
+// Este código leerá la variable que pusiste en Netlify cuando se despliegue.
+// Si estás en tu ordenador local, buscará un archivo .env.local.
+const baseURL = process.env.REACT_APP_API_BASE_URL;
+
 const apiClient = axios.create({
-  baseURL: '[https://fastlab-backend.onrender.com/api](https://fastlab-backend.onrender.com/api)', // O tu URL de backend
+  baseURL: baseURL,
 });
 
 apiClient.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
   if (user) {
-    const token = await user.getIdToken();
-    config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await user.getIdToken();
+      config.headers.Authorization = `Bearer ${token}`;
+    } catch (error) {
+      console.error("Error getting auth token:", error);
+    }
   }
   return config;
 });
@@ -52,7 +60,6 @@ export const askAssistant = (query, context) => {
   return apiClient.post('/assistant/ask', { query, context });
 };
 
-// --- NUEVA FUNCIÓN PARA EXPORTAR A CSV ---
 export const downloadReportCSV = (reportId, reportData) => {
   return apiClient.post(`/reports/${reportId}/csv`, reportData, {
     responseType: 'blob',

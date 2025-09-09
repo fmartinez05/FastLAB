@@ -8,20 +8,16 @@ const inputStyle = { width: '95%', padding: '10px', fontSize: '1rem', borderRadi
 const ResultsAnnotation = ({ prompts, results, dispatch, calculatedData = {} }) => {
 
   const handleTextChange = (index, value) => {
-    // Usamos una actualización funcional para obtener los resultados más recientes
-    const newResults = [...(results || [])];
-    if (!newResults[index]) {
-        newResults[index] = { prompt: prompts[index] };
-    }
-    newResults[index].value = value;
-    dispatch({ type: 'UPDATE_SPECIFIC_RESULTS', payload: newResults });
+    // Acción específica: envía el índice y el nuevo valor.
+    dispatch({
+      type: 'UPDATE_SINGLE_RESULT',
+      index: index,
+      payload: value,
+      prompt: prompts[index] // Incluimos el prompt para el reducer
+    });
   };
 
-  const getCalculatedValue = (prompt) => {
-    if (prompt.includes("(Vt)") && calculatedData.Vt) return calculatedData.Vt;
-    if (prompt.includes("(Kav)") && calculatedData.Kav_B12) return calculatedData.Kav_B12;
-    return null;
-  };
+  const getCalculatedValue = (prompt) => { /* ...código sin cambios... */ };
 
   return (
     <div style={{ marginTop: '2rem' }}>

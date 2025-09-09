@@ -9,35 +9,22 @@ const ProcedureList = ({ steps, annotations, dispatch }) => {
   const [modalStep, setModalStep] = useState(null);
 
   const handleToggleStep = (index) => {
-    const newAnnotations = [...annotations]; 
-    if (!newAnnotations[index]) {
-      newAnnotations[index] = { step: steps[index], completed: false, text: '', drawing: null };
-    }
-    newAnnotations[index].completed = !newAnnotations[index].completed;
-    dispatch({ type: 'UPDATE_ANNOTATIONS', payload: newAnnotations });
+    // Acción específica: solo indica qué paso cambiar.
+    dispatch({ type: 'TOGGLE_PROCEDURE_STEP', index: index, step: steps[index] });
   };
 
   const handleSaveAnnotation = (annotationData) => {
-    const index = modalStep.index;
-    const newAnnotations = [...annotations];
-
-    if (!newAnnotations[index]) {
-      newAnnotations[index] = { step: steps[index], completed: false };
-    }
-    
-    newAnnotations[index] = {
-        ...newAnnotations[index],
-        text: annotationData.text,
-        drawing: annotationData.drawing
-    };
-    
-    dispatch({ type: 'UPDATE_ANNOTATIONS', payload: newAnnotations });
+    // Acción específica: envía el índice y los nuevos datos de la anotación.
+    dispatch({
+      type: 'UPDATE_PROCEDURE_ANNOTATION',
+      index: modalStep.index,
+      payload: annotationData,
+      step: steps[modalStep.index]
+    });
     setModalStep(null);
   };
 
-  const handleOpenModal = (step, index) => {
-    setModalStep({ text: step, index: index });
-  };
+  const handleOpenModal = (step, index) => setModalStep({ text: step, index: index });
 
   return (
     <div>
@@ -50,10 +37,7 @@ const ProcedureList = ({ steps, annotations, dispatch }) => {
             style={{ marginRight: '15px', transform: 'scale(1.5)' }}
           />
           <span style={{ flexGrow: 1 }}>{step}</span>
-          <button
-            onClick={() => handleOpenModal(step, index)}
-            style={{ fontSize: '0.8rem', padding: '5px 10px', background: '#ecf0f1', color: '#333' }}
-          >
+          <button onClick={() => handleOpenModal(step, index)} style={{ fontSize: '0.8rem', padding: '5px 10px', background: '#ecf0f1', color: '#333' }}>
             Anotar
           </button>
         </div>

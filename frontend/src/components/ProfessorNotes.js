@@ -4,14 +4,13 @@ import DrawingCanvas from './DrawingCanvas';
 const ProfessorNotes = ({ notes, dispatch }) => {
 
   const handleTextChange = (e) => {
-    const newText = e.target.value;
-    const newNotes = { ...notes, text: newText };
-    dispatch({ type: 'UPDATE_PROFESSOR_NOTES', payload: newNotes });
+    // Acción específica: solo envía el nuevo texto.
+    dispatch({ type: 'UPDATE_PROFESSOR_NOTE_TEXT', payload: e.target.value });
   };
 
   const handleDrawingSave = (drawingState) => {
-    const newNotes = { ...notes, drawing: drawingState };
-    dispatch({ type: 'UPDATE_PROFESSOR_NOTES', payload: newNotes });
+    // Acción específica: solo envía el nuevo estado del dibujo.
+    dispatch({ type: 'UPDATE_PROFESSOR_NOTE_DRAWING', payload: drawingState });
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useReducer } from 'react';
+import React, { useState, useEffect, useReducer } from 'react'; // --- CORRECCIÓN 1: Se ha eliminado 'useCallback' que no se usaba.
 import { useParams, useNavigate } from 'react-router-dom';
 import { loadReport, downloadReport, downloadReportCSV } from '../api';
 import { useAutosave } from '../hooks/useAutosave';
@@ -12,8 +12,6 @@ import StandardCurve from '../components/StandardCurve';
 import AiAssistant from '../components/AiAssistant';
 import Footer from '../components/Footer';
 
-// --- 1. DEFINIMOS EL REDUCER PARA CENTRALIZAR LA LÓGICA DEL ESTADO ---
-// Esta función manejará todas las actualizaciones de reportData.
 const reportReducer = (state, action) => {
   switch (action.type) {
     case 'SET_INITIAL_DATA':
@@ -34,9 +32,13 @@ const reportReducer = (state, action) => {
     case 'UPDATE_SPECIFIC_RESULTS':
       return { ...state, specific_results: action.payload };
     case 'UPDATE_STANDARD_CURVE_DATA':
-      return { ...state, standard_curve_data: action.payload };
+        // Renombrado para evitar conflicto con el siguiente
+        const { setData, ...restOfAction } = action;
+        return { ...state, standard_curve_data: restOfAction.payload };
     case 'UPDATE_STANDARD_CURVE_IMAGE':
-      return { ...state, standard_curve_image: action.payload };
+        // Renombrado para evitar conflicto
+        const { onImageSave, ...restOfActionImage } = action;
+        return { ...state, standard_curve_image: restOfActionImage.payload };
     case 'SET_CALCULATED_DATA':
         return { ...state, calculated_data: action.payload };
     default:
@@ -44,11 +46,11 @@ const reportReducer = (state, action) => {
   }
 };
 
+
 const LabPage = () => {
     const { reportId } = useParams();
     const navigate = useNavigate();
     
-    // --- 2. USAMOS useReducer EN LUGAR DE useState PARA reportData ---
     const [reportData, dispatch] = useReducer(reportReducer, null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -56,7 +58,6 @@ const LabPage = () => {
 
     useAutosave(reportId, reportData, setIsSaving);
 
-    // Carga inicial de los datos del informe
     useEffect(() => {
         const loadData = async () => {
             setIsLoading(true);
@@ -73,7 +74,6 @@ const LabPage = () => {
         loadData();
     }, [reportId]);
     
-    // Lógica de cálculos proactivos (sin cambios, pero ahora usa dispatch)
     useEffect(() => {
         if (!Array.isArray(reportData?.specific_results)) return;
 
@@ -111,15 +111,60 @@ const LabPage = () => {
             dispatch({ type: 'SET_CALCULATED_DATA', payload: newCalculatedData });
         }
     }, [reportData?.specific_results, reportData?.calculated_data]);
+    
+    // --- CORRECCIÓN 2: Se ha restaurado el contenido de las funciones de descarga ---
+    const handleGeneratePdf = async () => {
+        setIsLoading(true); // Puedes usar un estado de carga específico si lo prefieres
+        try {
+            const response = await downloadReport(reportId, reportData);
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const filename = reportData.filename.replace('.pdf', '') || 'informe';
+            link.setAttribute('download', `${filename}_labnote.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Error al generar el PDF.');
+            console.error('Error generating PDF', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const handleDownloadCSV = async () => {
+        try {
+          const response = await downloadReportCSV(reportId, reportData);
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `datos_informe_${reportId}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        } catch (err) {
+          alert('Error al descargar el CSV.');
+          console.error("Error downloading CSV", err);
+        }
+    };
 
-    // Las funciones de descarga no cambian
-    const handleGeneratePdf = async () => { /* ...código sin cambios... */ };
-    const handleDownloadCSV = async () => { /* ...código sin cambios... */ };
 
     if (isLoading && !reportData) return <div className="loading-app">Cargando laboratorio...</div>;
     if (error) return <div className="App"><AppHeader /><p className="error">{error}</p></div>;
     if (!reportData) return <div>No se encontraron datos para este informe.</div>;
     
+    const StandardCurveWrapper = ({ data, dispatch }) => (
+        <StandardCurve
+            data={data}
+            setData={(newData) => dispatch({ type: 'UPDATE_STANDARD_CURVE_DATA', payload: newData })}
+            onImageSave={(base64) => dispatch({ type: 'UPDATE_STANDARD_CURVE_IMAGE', payload: base64 })}
+        />
+    );
+
+
     return (
         <>
             <AppHeader />
@@ -139,7 +184,6 @@ const LabPage = () => {
                         <h3>Fundamento Científico</h3>
                         <p>{reportData.summary}</p>
                     </div>
-                    {/* --- 3. PASAMOS dispatch A LOS COMPONENTES HIJOS --- */}
                     <ProfessorNotes 
                         notes={reportData.professor_notes} 
                         dispatch={dispatch} 
@@ -161,7 +205,7 @@ const LabPage = () => {
                         calculatedData={reportData.calculated_data}
                     />
                     
-                    <StandardCurve
+                    <StandardCurveWrapper
                         data={reportData.standard_curve_data}
                         dispatch={dispatch}
                     />

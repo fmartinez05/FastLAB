@@ -3,21 +3,19 @@ import { Tldraw } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 import { debounce } from 'lodash';
 
-// Este componente envuelve tldraw y maneja la carga y guardado de datos
-// usando la API correcta para la versión de tu proyecto.
+// Esta es la versión definitiva y más robusta del componente de la pizarra.
 const DrawingCanvas = ({ savedDrawing, onSave }) => {
   const [app, setApp] = useState(null);
 
-  // Callback para guardar la instancia de la app de tldraw una vez que se monta.
+  // Guardamos la instancia de la app de tldraw cuando se monta.
   const handleMount = useCallback((tldrawApp) => {
     setApp(tldrawApp);
   }, []);
 
-  // Efecto para cargar el dibujo guardado cuando el componente aparece y la app está lista.
+  // Efecto para cargar el dibujo guardado cuando el componente aparece.
   useEffect(() => {
     if (app && savedDrawing) {
       try {
-        // La API antigua usa loadDocument, que espera un objeto.
         const document = JSON.parse(savedDrawing);
         app.loadDocument(document);
       } catch (error) {
@@ -26,23 +24,31 @@ const DrawingCanvas = ({ savedDrawing, onSave }) => {
     }
   }, [app, savedDrawing]);
 
-  // Usamos useMemo para crear una versión "debounced" de la función de guardado.
-  // Esto asegura que no guardamos en cada movimiento del ratón, solo cuando el usuario para.
+  // --- LÓGICA DE GUARDADO CORREGIDA Y MEJORADA ---
   const debouncedSave = useMemo(
     () =>
-      debounce((tldrawApp) => {
-        // La API antigua usa `tldrawApp.document` para obtener el estado.
-        const drawingState = JSON.stringify(tldrawApp.document);
-        onSave(drawingState);
-      }, 500), // Espera 500ms después del último cambio para guardar
-    [onSave]
+      debounce(() => {
+        // IMPORTANTE: Solo intentamos guardar si la 'app' existe.
+        if (app) {
+          // Obtenemos el estado MÁS RECIENTE directamente de la instancia 'app'.
+          const drawingState = JSON.stringify(app.document);
+          onSave(drawingState);
+        }
+      }, 800), // Aumentamos ligeramente el tiempo de espera para más seguridad.
+    [app, onSave] // La función se recalcula si 'app' o 'onSave' cambian.
   );
+
+  // El evento onChange ahora solo llama a la función debounced, sin pasar argumentos.
+  // La función ya sabe de dónde obtener los datos (del estado 'app').
+  const handleChange = () => {
+    debouncedSave();
+  };
   
   return (
     <div className="drawing-canvas-container" style={{ position: 'relative', height: '450px' }}>
       <Tldraw
         onMount={handleMount}
-        onChange={debouncedSave} // Usamos la función debounced directamente aquí.
+        onChange={handleChange} // Usamos nuestra nueva función de control.
         showUI={true}
         showPages={false}
         showMenu={false}

@@ -1,39 +1,50 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { saveReport } from '../api';
 import { debounce } from 'lodash';
 
-// Necesitarás instalar lodash: npm install lodash
 export const useAutosave = (reportId, data, setIsSaving, delay = 2500) => {
+  // --- 1. CREAMOS UN REF PARA GUARDAR SIEMPRE LA ÚLTIMA VERSIÓN DE LOS DATOS ---
+  // Este ref actuará como nuestra "caja mágica".
+  const latestData = useRef(data);
+
+  // Este efecto se asegura de que nuestro ref siempre tenga los datos más frescos en cada render.
+  useEffect(() => {
+    latestData.current = data;
+  }, [data]);
+
   const firstMount = useRef(true);
 
-  // Usamos useRef para mantener la misma instancia de la función debounced entre renders
-  const debouncedSave = useRef(
-    debounce(async (id, reportData) => {
-      if (!id || !reportData) return;
+  const debouncedSave = useMemo(() =>
+    debounce(async (id) => {
+      // --- 2. LA FUNCIÓN DE GUARDADO USA LOS DATOS DEL REF, NO UN ARGUMENTO ---
+      // Justo antes de guardar, mira dentro de la "caja mágica" para obtener los datos más recientes.
+      const dataToSave = latestData.current;
+      if (!id || !dataToSave) return;
+
       setIsSaving(true);
       try {
-        await saveReport(id, reportData);
+        await saveReport(id, dataToSave);
       } catch (error) {
         console.error("Error en autoguardado:", error);
       } finally {
-        setTimeout(() => setIsSaving(false), 1000); // Mantiene el estado de "Guardado" por 1s
+        setTimeout(() => setIsSaving(false), 1000);
       }
-    }, delay)
-  ).current;
+    }, delay),
+    [delay, setIsSaving] // Dependencias que no cambian.
+  );
 
   useEffect(() => {
-    // Evitamos guardar en la primera carga del componente
     if (firstMount.current) {
       firstMount.current = false;
       return;
     }
     
-    // Solo llamamos a guardar si hay datos
     if (data && reportId) {
-      debouncedSave(reportId, data);
+      // --- 3. LA LLAMADA AHORA ES MÁS SIMPLE ---
+      // Solo necesitamos "activar" el guardado. Ya no pasamos los datos directamente.
+      debouncedSave(reportId);
     }
 
-    // Limpieza al desmontar el componente
     return () => {
       debouncedSave.cancel();
     };

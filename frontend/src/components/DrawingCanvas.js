@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { Tldraw, useEditor } from '@tldraw/tldraw'; // Usaremos el hook useEditor para más control
+import React, { useCallback, useEffect } from 'react'; // <-- CORRECCIÓN AQUÍ
+import { Tldraw, useEditor } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 import { debounce } from 'lodash';
 
@@ -28,7 +28,7 @@ const TldrawEditor = ({ savedDrawing, onSave }) => {
             // Guardamos el estado como un string JSON, como ya lo hacías.
             onSave(JSON.stringify(newSnapshot));
         }, 500), // 500ms de espera
-        [onSave] 
+        [onSave]
     );
 
     // useEffect para escuchar los cambios dentro del editor de tldraw
@@ -57,7 +57,6 @@ const DrawingCanvas = ({ savedDrawing, onSave }) => {
     return (
         <div className="drawing-canvas-container" style={{ position: 'relative', height: '450px' }}>
             <Tldraw
-                // Ya no necesitamos onMount ni onChange aquí
                 // La lógica se ha movido al componente TldrawEditor
                 showUI={true}
                 showPages={false}

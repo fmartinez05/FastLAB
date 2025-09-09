@@ -1,51 +1,72 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Tldraw } from '@tldraw/tldraw';
+import React, { useCallback } from 'react';
+import { Tldraw, useEditor } from '@tldraw/tldraw'; // Usaremos el hook useEditor para más control
 import '@tldraw/tldraw/tldraw.css';
+import { debounce } from 'lodash';
 
-// Este componente envuelve tldraw y maneja la carga y guardado de datos.
+// Componente interno para manejar la lógica de la pizarra
+const TldrawEditor = ({ savedDrawing, onSave }) => {
+    const editor = useEditor();
+
+    // Efecto para cargar el dibujo guardado cuando el editor está listo
+    useEffect(() => {
+        if (editor && savedDrawing) {
+            try {
+                // tldraw espera un objeto, no un string JSON. Lo parseamos.
+                const snapshot = JSON.parse(savedDrawing);
+                editor.loadSnapshot(snapshot);
+            } catch (error) {
+                console.error("Error al cargar el dibujo guardado:", error);
+            }
+        }
+    }, [editor, savedDrawing]);
+
+    // --- CAMBIO CLAVE: FUNCIÓN DE GUARDADO CON DEBOUNCE ---
+    // Creamos una versión de onSave que espera 500ms antes de ejecutarse.
+    // useCallback asegura que esta función no se recree en cada render.
+    const debouncedSave = useCallback(
+        debounce((newSnapshot) => {
+            // Guardamos el estado como un string JSON, como ya lo hacías.
+            onSave(JSON.stringify(newSnapshot));
+        }, 500), // 500ms de espera
+        [onSave] 
+    );
+
+    // useEffect para escuchar los cambios dentro del editor de tldraw
+    useEffect(() => {
+        if (!editor) return;
+
+        // Nos suscribimos a los cambios en el estado de la pizarra
+        const handleChange = () => {
+            const currentSnapshot = editor.getSnapshot();
+            debouncedSave(currentSnapshot);
+        };
+
+        const unsubscribe = editor.store.on('change', handleChange);
+
+        // Limpieza: nos desuscribimos cuando el componente se desmonta
+        return () => {
+            unsubscribe();
+        };
+    }, [editor, debouncedSave]);
+
+    return null; // Este componente no renderiza nada, solo contiene la lógica
+};
+
+// Componente principal que exportamos
 const DrawingCanvas = ({ savedDrawing, onSave }) => {
-  const [app, setApp] = useState(null);
-
-  // Callback para guardar la instancia de la app de tldraw
-  const handleMount = useCallback((tldrawApp) => {
-    setApp(tldrawApp);
-  }, []);
-
-  // Efecto para cargar el dibujo guardado cuando el componente aparece
-  useEffect(() => {
-    // **CAMBIO IMPORTANTE:**
-    // Solo actuamos si tenemos un dibujo guardado para cargar.
-    // Si 'savedDrawing' no existe, no hacemos nada y dejamos que tldraw
-    // muestre su lienzo vacío por defecto.
-    if (app && savedDrawing) {
-      try {
-        const document = JSON.parse(savedDrawing);
-        app.loadDocument(document);
-      } catch (error) {
-        console.error("Error al cargar el dibujo guardado:", error);
-        // Si el dibujo guardado está corrupto, no hacemos nada y el usuario verá un lienzo en blanco.
-      }
-    }
-    // Hemos eliminado el bloque 'else' que llamaba a la función que causaba el error.
-  }, [app, savedDrawing]);
-
-  // Se activa cada vez que hay un cambio en el lienzo
-  const handleChange = (tldrawApp) => {
-    const drawingState = JSON.stringify(tldrawApp.document);
-    onSave(drawingState);
-  };
-  
-  return (
-    <div style={{ position: 'relative', height: '450px' }}>
-      <Tldraw
-        onMount={handleMount}
-        onChange={handleChange}
-        showUI={true}
-        showPages={false}
-        showMenu={false}
-      />
-    </div>
-  );
+    return (
+        <div className="drawing-canvas-container" style={{ position: 'relative', height: '450px' }}>
+            <Tldraw
+                // Ya no necesitamos onMount ni onChange aquí
+                // La lógica se ha movido al componente TldrawEditor
+                showUI={true}
+                showPages={false}
+                showMenu={false}
+            >
+                <TldrawEditor savedDrawing={savedDrawing} onSave={onSave} />
+            </Tldraw>
+        </div>
+    );
 };
 
 export default DrawingCanvas;

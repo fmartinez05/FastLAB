@@ -1,57 +1,37 @@
 import React, { useState } from 'react';
 import AnnotationModal from './AnnotationModal';
 
-const listItemStyle = {
-  display: 'flex', alignItems: 'center', marginBottom: '10px',
-  padding: '10px', borderRadius: '5px', transition: 'background-color 0.3s',
-  border: '1px solid #eee'
-};
+// Estilos (sin cambios)
+const listItemStyle = { display: 'flex', alignItems: 'center', marginBottom: '10px', padding: '10px', borderRadius: '5px', transition: 'background-color 0.3s', border: '1px solid #eee' };
+const completedStyle = { ...listItemStyle, backgroundColor: '#eafaf1', textDecoration: 'line-through', color: '#555' };
 
-const completedStyle = {
-  ...listItemStyle,
-  backgroundColor: '#eafaf1',
-  textDecoration: 'line-through',
-  color: '#555'
-};
-
-const ProcedureList = ({ steps, annotations, setAnnotations }) => {
+const ProcedureList = ({ steps, annotations, dispatch }) => {
   const [modalStep, setModalStep] = useState(null);
 
   const handleToggleStep = (index) => {
-    // --- CORRECCIÓN: Usamos la actualización funcional para evitar estado obsoleto ---
-    setAnnotations(currentAnnotations => {
-      // Trabajamos con la versión más reciente del estado
-      const newAnnotations = [...currentAnnotations]; 
-      
-      if (!newAnnotations[index]) {
-        newAnnotations[index] = { step: steps[index], completed: false, text: '', drawing: null };
-      }
-      
-      newAnnotations[index].completed = !newAnnotations[index].completed;
-      return newAnnotations;
-    });
+    const newAnnotations = [...annotations]; 
+    if (!newAnnotations[index]) {
+      newAnnotations[index] = { step: steps[index], completed: false, text: '', drawing: null };
+    }
+    newAnnotations[index].completed = !newAnnotations[index].completed;
+    dispatch({ type: 'UPDATE_ANNOTATIONS', payload: newAnnotations });
   };
 
   const handleSaveAnnotation = (annotationData) => {
     const index = modalStep.index;
+    const newAnnotations = [...annotations];
 
-    // --- CORRECCIÓN: Usamos la actualización funcional aquí también ---
-    setAnnotations(currentAnnotations => {
-      const newAnnotations = [...currentAnnotations];
-
-      if (!newAnnotations[index]) {
-        newAnnotations[index] = { step: steps[index], completed: false };
-      }
-      
-      newAnnotations[index] = {
-          ...newAnnotations[index], 
-          text: annotationData.text,
-          drawing: annotationData.drawing
-      };
-      
-      return newAnnotations;
-    });
-
+    if (!newAnnotations[index]) {
+      newAnnotations[index] = { step: steps[index], completed: false };
+    }
+    
+    newAnnotations[index] = {
+        ...newAnnotations[index],
+        text: annotationData.text,
+        drawing: annotationData.drawing
+    };
+    
+    dispatch({ type: 'UPDATE_ANNOTATIONS', payload: newAnnotations });
     setModalStep(null);
   };
 
@@ -61,7 +41,6 @@ const ProcedureList = ({ steps, annotations, setAnnotations }) => {
 
   return (
     <div>
-      {/* Nos aseguramos de que 'steps' sea un array antes de mapearlo */}
       {Array.isArray(steps) && steps.map((step, index) => (
         <div key={index} style={annotations[index]?.completed ? completedStyle : listItemStyle}>
           <input

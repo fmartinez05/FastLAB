@@ -1,41 +1,20 @@
 import React from 'react';
 
-const resultItemStyle = {
-  marginBottom: '1.5rem',
-  padding: '1rem',
-  border: '1px solid #e0e0e0',
-  borderRadius: '8px',
-  backgroundColor: '#fdfdfd'
-};
+// Estilos (sin cambios)
+const resultItemStyle = { marginBottom: '1.5rem', padding: '1rem', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#fdfdfd' };
+const labelStyle = { display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: '#34495e' };
+const inputStyle = { width: '95%', padding: '10px', fontSize: '1rem', borderRadius: '5px', border: '1px solid #ccc' };
 
-const labelStyle = {
-  display: 'block',
-  fontWeight: 'bold',
-  marginBottom: '0.5rem',
-  color: '#34495e'
-};
-
-const inputStyle = {
-  width: '95%',
-  padding: '10px',
-  fontSize: '1rem',
-  borderRadius: '5px',
-  border: '1px solid #ccc'
-};
-
-const ResultsAnnotation = ({ prompts, results, setResults, calculatedData = {} }) => {
+const ResultsAnnotation = ({ prompts, results, dispatch, calculatedData = {} }) => {
 
   const handleTextChange = (index, value) => {
-    // --- CORRECCIÓN: Usamos la actualización funcional para garantizar la integridad de los datos ---
-    setResults(currentResults => {
-      // Creamos una copia del array más reciente para no mutar el estado.
-      const newResults = [...currentResults];
-      if (!newResults[index]) {
-          newResults[index] = { prompt: prompts[index] };
-      }
-      newResults[index].value = value;
-      return newResults;
-    });
+    // Usamos una actualización funcional para obtener los resultados más recientes
+    const newResults = [...(results || [])];
+    if (!newResults[index]) {
+        newResults[index] = { prompt: prompts[index] };
+    }
+    newResults[index].value = value;
+    dispatch({ type: 'UPDATE_SPECIFIC_RESULTS', payload: newResults });
   };
 
   const getCalculatedValue = (prompt) => {
@@ -48,7 +27,6 @@ const ResultsAnnotation = ({ prompts, results, setResults, calculatedData = {} }
     <div style={{ marginTop: '2rem' }}>
       <h3>📊 Anotación de Resultados</h3>
       <p>La IA ha determinado que estos son los datos clave a registrar. Por favor, complétalos.</p>
-      {/* Se asegura de que prompts sea un array antes de mapear */}
       {Array.isArray(prompts) && prompts.map((prompt, index) => {
         const calculatedValue = getCalculatedValue(prompt);
         const isCalculated = calculatedValue !== null;

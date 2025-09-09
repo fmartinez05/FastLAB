@@ -1,23 +1,17 @@
 import React from 'react';
-import DrawingCanvas from './DrawingCanvas';
+import DrawingCanvas from './DrawingCanvas'; 
 
-const ProfessorNotes = ({ notes, setNotes }) => {
+const ProfessorNotes = ({ notes, dispatch }) => {
 
   const handleTextChange = (e) => {
     const newText = e.target.value;
-    // --- CORRECCIÓN: Usamos la actualización funcional para evitar estado obsoleto ---
-    setNotes(currentNotes => ({
-      ...currentNotes,
-      text: newText
-    }));
+    const newNotes = { ...notes, text: newText };
+    dispatch({ type: 'UPDATE_PROFESSOR_NOTES', payload: newNotes });
   };
 
   const handleDrawingSave = (drawingState) => {
-    // --- CORRECCIÓN: Usamos la actualización funcional aquí también ---
-    setNotes(currentNotes => ({
-      ...currentNotes,
-      drawing: drawingState
-    }));
+    const newNotes = { ...notes, drawing: drawingState };
+    dispatch({ type: 'UPDATE_PROFESSOR_NOTES', payload: newNotes });
   };
 
   return (

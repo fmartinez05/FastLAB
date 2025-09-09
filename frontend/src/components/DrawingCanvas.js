@@ -1,65 +1,54 @@
-import React, { useEffect, useMemo } from 'react'; // <-- CORRECCIÓN 1: Importamos useMemo
-import { Tldraw, useEditor } from '@tldraw/tldraw';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import { Tldraw } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 import { debounce } from 'lodash';
 
-// Componente interno para manejar la lógica de la pizarra
-const TldrawEditor = ({ savedDrawing, onSave }) => {
-    const editor = useEditor();
-
-    useEffect(() => {
-        if (editor && savedDrawing) {
-            try {
-                const snapshot = JSON.parse(savedDrawing);
-                editor.loadSnapshot(snapshot);
-            } catch (error) {
-                console.error("Error al cargar el dibujo guardado:", error);
-            }
-        }
-    }, [editor, savedDrawing]);
-
-    // --- CORRECCIÓN 2: Cambiamos useCallback por useMemo ---
-    // useMemo es la forma correcta de memorizar un valor (como una función debounced)
-    // entre renders. Esto satisface la regla de eslint y soluciona el error de build.
-    const debouncedSave = useMemo(
-        () => 
-            debounce((newSnapshot) => {
-                onSave(JSON.stringify(newSnapshot));
-            }, 500),
-        [onSave]
-    );
-
-    useEffect(() => {
-        if (!editor) return;
-
-        const handleChange = () => {
-            const currentSnapshot = editor.getSnapshot();
-            debouncedSave(currentSnapshot);
-        };
-
-        const unsubscribe = editor.store.on('change', handleChange);
-
-        return () => {
-            unsubscribe();
-        };
-    }, [editor, debouncedSave]);
-
-    return null;
-};
-
-// Componente principal que exportamos
+// Este componente envuelve tldraw y maneja la carga y guardado de datos
+// usando la API correcta para la versión de tu proyecto.
 const DrawingCanvas = ({ savedDrawing, onSave }) => {
-    return (
-        <div className="drawing-canvas-container" style={{ position: 'relative', height: '450px' }}>
-            <Tldraw
-                showUI={true}
-                showPages={false}
-                showMenu={false}
-            >
-                <TldrawEditor savedDrawing={savedDrawing} onSave={onSave} />
-            </Tldraw>
-        </div>
-    );
+  const [app, setApp] = useState(null);
+
+  // Callback para guardar la instancia de la app de tldraw una vez que se monta.
+  const handleMount = useCallback((tldrawApp) => {
+    setApp(tldrawApp);
+  }, []);
+
+  // Efecto para cargar el dibujo guardado cuando el componente aparece y la app está lista.
+  useEffect(() => {
+    if (app && savedDrawing) {
+      try {
+        // La API antigua usa loadDocument, que espera un objeto.
+        const document = JSON.parse(savedDrawing);
+        app.loadDocument(document);
+      } catch (error) {
+        console.error("Error al cargar el dibujo guardado:", error);
+      }
+    }
+  }, [app, savedDrawing]);
+
+  // Usamos useMemo para crear una versión "debounced" de la función de guardado.
+  // Esto asegura que no guardamos en cada movimiento del ratón, solo cuando el usuario para.
+  const debouncedSave = useMemo(
+    () =>
+      debounce((tldrawApp) => {
+        // La API antigua usa `tldrawApp.document` para obtener el estado.
+        const drawingState = JSON.stringify(tldrawApp.document);
+        onSave(drawingState);
+      }, 500), // Espera 500ms después del último cambio para guardar
+    [onSave]
+  );
+  
+  return (
+    <div className="drawing-canvas-container" style={{ position: 'relative', height: '450px' }}>
+      <Tldraw
+        onMount={handleMount}
+        onChange={debouncedSave} // Usamos la función debounced directamente aquí.
+        showUI={true}
+        showPages={false}
+        showMenu={false}
+      />
+    </div>
+  );
 };
 
 export default DrawingCanvas;

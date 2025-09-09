@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom'; // 'useNavigate' has been removed
 import { loadReport, downloadReport, downloadReportCSV } from '../api';
 import { useAutosave } from '../hooks/useAutosave';
 import AppHeader from '../components/AppHeader';
@@ -9,21 +9,18 @@ import AiAssistant from '../components/AiAssistant';
 
 const LabPage = () => {
   const { reportId } = useParams();
-  const navigate = useNavigate();
+  // 'navigate' has been removed as it was not used
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isSaving, setIsSaving] = useState(false); // Para el feedback visual del autoguardado
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Hook de Autoguardado
   useAutosave(reportId, reportData, setIsSaving);
 
-  // Cargar datos del informe al montar el componente
   useEffect(() => {
     const fetchReport = async () => {
       try {
         const response = await loadReport(reportId);
-        // Inicializamos los nuevos campos si no existen en los datos cargados
         setReportData({
           ...response.data,
           calculated_data: response.data.calculated_data || {},
@@ -40,7 +37,6 @@ const LabPage = () => {
     fetchReport();
   }, [reportId]);
 
-  // Lógica de cálculo proactivo
   useEffect(() => {
     if (!reportData?.specific_results) return;
 
@@ -78,7 +74,8 @@ const LabPage = () => {
         setReportData(prev => ({ ...prev, calculated_data: newCalculatedData }));
     }
 
-  }, [reportData?.specific_results]);
+  // --- FIX APPLIED HERE: Added missing dependency ---
+  }, [reportData?.specific_results, reportData?.calculated_data]);
 
   const handleDownloadPDF = async () => {
     try {
@@ -133,7 +130,6 @@ const LabPage = () => {
           <p>{reportData.summary}</p>
         </section>
 
-        {/* --- COMPONENTE DE RESULTADOS MODIFICADO --- */}
         <ResultsAnnotation 
           prompts={reportData.results_prompts}
           results={reportData.specific_results}
@@ -141,14 +137,12 @@ const LabPage = () => {
           calculatedData={reportData.calculated_data}
         />
 
-        {/* --- NUEVO COMPONENTE DE GRÁFICA --- */}
         <StandardCurve
           data={reportData.standard_curve_data}
           setData={(newData) => updateField('standard_curve_data', newData)}
           onImageSave={(base64) => updateField('standard_curve_image', base64)}
         />
 
-        {/* --- BOTONES DE EXPORTACIÓN --- */}
         <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem', display: 'flex', gap: '1rem' }}>
           <button onClick={handleDownloadPDF} className="generate-report-button">Generar Informe PDF</button>
           <button onClick={handleDownloadCSV} style={{backgroundColor: '#f39c12'}}>Descargar Datos (CSV)</button>

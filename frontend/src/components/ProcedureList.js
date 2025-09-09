@@ -17,48 +17,52 @@ const completedStyle = {
 const ProcedureList = ({ steps, annotations, setAnnotations }) => {
   const [modalStep, setModalStep] = useState(null);
 
-  // Esta función ya estaba correcta y se mantiene igual
   const handleToggleStep = (index) => {
-    const newAnnotations = [...annotations]; 
-    
-    if (!newAnnotations[index]) {
-      newAnnotations[index] = { step: steps[index], completed: false, text: '', drawing: null };
-    }
-    
-    newAnnotations[index].completed = !newAnnotations[index].completed;
-    setAnnotations(newAnnotations);
+    // --- CORRECCIÓN: Usamos la actualización funcional para evitar estado obsoleto ---
+    setAnnotations(currentAnnotations => {
+      // Trabajamos con la versión más reciente del estado
+      const newAnnotations = [...currentAnnotations]; 
+      
+      if (!newAnnotations[index]) {
+        newAnnotations[index] = { step: steps[index], completed: false, text: '', drawing: null };
+      }
+      
+      newAnnotations[index].completed = !newAnnotations[index].completed;
+      return newAnnotations;
+    });
   };
 
-  // ===== CORRECCIÓN CLAVE AQUÍ =====
-  // Ahora, la función recibe 'annotationData' (que incluye texto y dibujo) y lo guarda todo.
   const handleSaveAnnotation = (annotationData) => {
     const index = modalStep.index;
-    const newAnnotations = [...annotations];
 
-    // Nos aseguramos de que el objeto de anotación exista en el índice
-    if (!newAnnotations[index]) {
-      newAnnotations[index] = { step: steps[index], completed: false };
-    }
-    
-    // Fusionamos la data existente (como 'completed') con la nueva data del modal
-    newAnnotations[index] = {
-        ...newAnnotations[index], // Mantiene el estado 'completed' si ya existía
-        text: annotationData.text,
-        drawing: annotationData.drawing // ¡Ahora guardamos el dibujo!
-    };
-    
-    setAnnotations(newAnnotations);
+    // --- CORRECCIÓN: Usamos la actualización funcional aquí también ---
+    setAnnotations(currentAnnotations => {
+      const newAnnotations = [...currentAnnotations];
+
+      if (!newAnnotations[index]) {
+        newAnnotations[index] = { step: steps[index], completed: false };
+      }
+      
+      newAnnotations[index] = {
+          ...newAnnotations[index], 
+          text: annotationData.text,
+          drawing: annotationData.drawing
+      };
+      
+      return newAnnotations;
+    });
+
     setModalStep(null);
   };
 
   const handleOpenModal = (step, index) => {
-    // Almacenamos el texto y el índice del paso que se está editando
     setModalStep({ text: step, index: index });
   };
 
   return (
     <div>
-      {steps.map((step, index) => (
+      {/* Nos aseguramos de que 'steps' sea un array antes de mapearlo */}
+      {Array.isArray(steps) && steps.map((step, index) => (
         <div key={index} style={annotations[index]?.completed ? completedStyle : listItemStyle}>
           <input
             type="checkbox"
@@ -77,7 +81,6 @@ const ProcedureList = ({ steps, annotations, setAnnotations }) => {
       ))}
       {modalStep && (
         <AnnotationModal
-          // Pasamos la anotación existente (si la hay) al modal para que pueda mostrarla
           step={{ text: modalStep.text, annotation: annotations[modalStep.index] }}
           onSave={handleSaveAnnotation}
           onCancel={() => setModalStep(null)}

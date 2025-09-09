@@ -1,18 +1,23 @@
 import React from 'react';
-import DrawingCanvas from './DrawingCanvas'; // Importamos nuestro nuevo componente
+import DrawingCanvas from './DrawingCanvas';
 
 const ProfessorNotes = ({ notes, setNotes }) => {
 
   const handleTextChange = (e) => {
-    // Actualizamos solo el texto, el dibujo se maneja por separado
-    const newNotes = { ...notes, text: e.target.value };
-    setNotes(newNotes);
+    const newText = e.target.value;
+    // --- CORRECCIÓN: Usamos la actualización funcional para evitar estado obsoleto ---
+    setNotes(currentNotes => ({
+      ...currentNotes,
+      text: newText
+    }));
   };
 
   const handleDrawingSave = (drawingState) => {
-    // Guardamos el estado del dibujo que nos envía DrawingCanvas
-    const newNotes = { ...notes, drawing: drawingState };
-    setNotes(newNotes);
+    // --- CORRECCIÓN: Usamos la actualización funcional aquí también ---
+    setNotes(currentNotes => ({
+      ...currentNotes,
+      drawing: drawingState
+    }));
   };
 
   return (
@@ -31,8 +36,8 @@ const ProfessorNotes = ({ notes, setNotes }) => {
 
       <h4>Apuntes a Mano</h4>
       <DrawingCanvas
-        savedDrawing={notes?.drawing} // Pasamos el dibujo guardado
-        onSave={handleDrawingSave}     // Pasamos la función para guardar
+        savedDrawing={notes?.drawing}
+        onSave={handleDrawingSave}
       />
     </div>
   );

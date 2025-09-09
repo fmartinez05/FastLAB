@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DrawingCanvas from './DrawingCanvas'; // Reutilizamos nuestro componente
+import DrawingCanvas from './DrawingCanvas';
 
 const modalStyle = {
   position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -13,15 +13,17 @@ const overlayStyle = {
 };
 
 const AnnotationModal = ({ step, onSave, onCancel }) => {
-  // Estado local para manejar los cambios antes de guardar
   const [annotation, setAnnotation] = useState(step.annotation || { text: '', drawing: null });
 
   const handleTextChange = (e) => {
-    setAnnotation({ ...annotation, text: e.target.value });
+    const newText = e.target.value;
+    // --- CORRECCIÓN: Aplicamos la actualización funcional también al estado local del modal ---
+    setAnnotation(currentAnnotation => ({ ...currentAnnotation, text: newText }));
   };
 
   const handleDrawingSave = (drawingState) => {
-    setAnnotation({ ...annotation, drawing: drawingState });
+    // --- CORRECCIÓN: Aplicamos la actualización funcional aquí ---
+    setAnnotation(currentAnnotation => ({ ...currentAnnotation, drawing: drawingState }));
   };
 
   const handleSave = () => {

@@ -14,6 +14,17 @@ const inputStyle = {
     width: '180px'
 };
 
+// --- FUNCIÓN DE AYUDA AÑADIDA PARA EVITAR ERRORES ---
+// Esta función comprueba si un valor es un número antes de formatearlo.
+const safeToFixed = (value, precision) => {
+    const num = parseFloat(value);
+    if (typeof num === 'number' && !isNaN(num)) {
+        return num.toFixed(precision);
+    }
+    // Si el valor no es un número válido, devuelve un texto seguro.
+    return '...';
+};
+
 const StandardCurve = ({ data, setData, onImageSave }) => {
   const chartRef = useRef(null);
   const [chartData, setChartData] = useState({ datasets: [] });
@@ -21,7 +32,6 @@ const StandardCurve = ({ data, setData, onImageSave }) => {
 
   const handleDataChange = (index, field, value) => {
     const newData = [...data];
-    // Aseguramos que el objeto exista
     if (!newData[index]) newData[index] = { mw: '', ve: '' };
     newData[index][field] = value;
     setData(newData);
@@ -38,18 +48,30 @@ const StandardCurve = ({ data, setData, onImageSave }) => {
     let regressionLinePoints = [];
     if (validPoints.length >= 2) {
         const regressionData = validPoints.map(p => [Math.log10(p.mw), p.ve]);
-        const regression = linearRegression(regressionData);
-        const lineFunction = linearRegressionLine(regression);
         
-        const minLogMw = Math.min(...regressionData.map(p => p[0]));
-        const maxLogMw = Math.max(...regressionData.map(p => p[0]));
+        try {
+            const regression = linearRegression(regressionData);
+            const lineFunction = linearRegressionLine(regression);
+            
+            const minLogMw = Math.min(...regressionData.map(p => p[0]));
+            const maxLogMw = Math.max(...regressionData.map(p => p[0]));
 
-        regressionLinePoints = [
-            { x: Math.pow(10, minLogMw), y: lineFunction(minLogMw) },
-            { x: Math.pow(10, maxLogMw), y: lineFunction(maxLogMw) }
-        ];
+            regressionLinePoints = [
+                { x: Math.pow(10, minLogMw), y: lineFunction(minLogMw) },
+                { x: Math.pow(10, maxLogMw), y: lineFunction(maxLogMw) }
+            ];
 
-        setRegressionInfo(`y = ${regression.m.toFixed(3)} * log(x) + ${regression.b.toFixed(3)}  (R² = ${regression.rSquared.toFixed(4)})`);
+            // --- CÓDIGO CORREGIDO: Usamos la función segura "safeToFixed" ---
+            setRegressionInfo(
+                `y = ${safeToFixed(regression.m, 3)} * log(x) + ${safeToFixed(regression.b, 3)}  (R² = ${safeToFixed(regression.rSquared, 4)})`
+            );
+
+        } catch (error) {
+            // Si la librería estadística falla por algún motivo (ej. línea vertical)
+            console.error("Error calculating regression:", error);
+            setRegressionInfo('No se puede calcular la regresión con los datos actuales.');
+        }
+
     } else {
         setRegressionInfo('Se necesitan al menos 2 puntos válidos para la regresión.');
     }

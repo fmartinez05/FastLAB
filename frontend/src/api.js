@@ -2,7 +2,7 @@ import axios from 'axios';
 import { auth } from './firebase-config';
 
 const apiClient = axios.create({
-  baseURL: 'https://fastlab-backend.onrender.com/api',
+  baseURL: '[https://fastlab-backend.onrender.com/api](https://fastlab-backend.onrender.com/api)', // O tu URL de backend
 });
 
 apiClient.interceptors.request.use(async (config) => {
@@ -44,12 +44,17 @@ export const downloadReport = (reportId, reportData) => {
   });
 };
 
-// --- ¡NUEVA FUNCIÓN PARA BORRAR! ---
 export const deleteReport = (reportId) => {
   return apiClient.delete(`/reports/${reportId}`);
 };
 
-// --- NUEVA FUNCIÓN PARA EL ASISTENTE IA ---
 export const askAssistant = (query, context) => {
   return apiClient.post('/assistant/ask', { query, context });
+};
+
+// --- NUEVA FUNCIÓN PARA EXPORTAR A CSV ---
+export const downloadReportCSV = (reportId, reportData) => {
+  return apiClient.post(`/reports/${reportId}/csv`, reportData, {
+    responseType: 'blob',
+  });
 };

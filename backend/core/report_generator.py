@@ -3,24 +3,16 @@ import io
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.lib.colors import navy, black # Importamos el color negro
+from reportlab.lib.colors import navy, black
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from io import BytesIO
 from typing import Dict, Any
 
-# --- SI TUVIESES LOS ARCHIVOS DE LA FUENTE CORBEL (.ttf), LOS REGISTRARÍAS ASÍ ---
-# from reportlab.pdfgen import pdfmetrics
-# from reportlab.lib.fonts import addMapping
-# pdfmetrics.registerFont(TTFont('Corbel', 'Corbel.ttf'))
-# pdfmetrics.registerFont(TTFont('Corbel-Bold', 'Corbel-Bold.ttf'))
-# addMapping('Corbel', 0, 0, 'Corbel')
-# addMapping('Corbel', 1, 0, 'Corbel-Bold')
-
-
 def get_image(base64_string: str, width: float = 4.5 * inch) -> Image:
-    """Decodes a base64 image string and returns a ReportLab Image object."""
     try:
-        base64_string = base64_string.split(',')[-1]
+        if 'base64,' in base64_string:
+            base64_string = base64_string.split(',')[-1]
+        
         pad = len(base64_string) % 4
         if pad > 0:
             base64_string += "=" * (4 - pad)
@@ -45,56 +37,38 @@ def create_professional_report(content: str, images: Dict[str, Any]) -> BytesIO:
     
     styles = getSampleStyleSheet()
     
-    # --- ESTILOS MODIFICADOS SEGÚN TU PETICIÓN ---
-    
-    # 1. Estilo para el TÍTULO
-    # Font: Helvetica (similar a Corbel), Tamaño: 16, Centrado
-    styles.add(ParagraphStyle(name='TitleStyle',
-                              fontName='Helvetica-Bold', # Usamos Helvetica-Bold como sustituto de Corbel
-                              fontSize=16,
-                              alignment=TA_CENTER,
-                              textColor=black,
-                              spaceAfter=20))
-
-    # 2. Estilo para los APARTADOS
-    # Font: Helvetica (similar a Corbel), Tamaño: 14
-    styles.add(ParagraphStyle(name='Heading1Style',
-                              fontName='Helvetica-Bold', # Usamos Helvetica-Bold como sustituto de Corbel
-                              fontSize=14,
-                              textColor=black,
-                              spaceBefore=12,
-                              spaceAfter=6,
-                              leading=16))
-                              
-    # 3. Estilo para el TEXTO normal
-    # Font: Helvetica (similar a Corbel), Tamaño: 11
-    styles.add(ParagraphStyle(name='Justify',
-                              fontName='Helvetica', # Usamos Helvetica como sustituto de Corbel
-                              fontSize=11,
-                              alignment=TA_JUSTIFY,
-                              textColor=black,
-                              leading=14)) # Leading (interlineado) ajustado para el tamaño 11
+    styles.add(ParagraphStyle(name='TitleStyle', fontName='Helvetica-Bold', fontSize=16, alignment=TA_CENTER, textColor=black, spaceAfter=20))
+    styles.add(ParagraphStyle(name='Heading1Style', fontName='Helvetica-Bold', fontSize=14, textColor=black, spaceBefore=12, spaceAfter=6, leading=16))
+    styles.add(ParagraphStyle(name='Justify', fontName='Helvetica', fontSize=11, alignment=TA_JUSTIFY, textColor=black, leading=14))
 
     story = []
     lines = content.split('\n')
     
     professor_drawing = images.get('professor_notes_drawing')
     annotations_drawings_list = [img for step, img in images.get('annotations_drawings', {}).items() if img]
+    curve_image_b64 = images.get('standard_curve_image')
     
     if lines:
-        # Añadimos el título y lo convertimos a MAYÚSCULAS
         title_text = lines[0].upper()
         story.append(Paragraph(title_text, styles['TitleStyle']))
         story.append(Spacer(1, 0.2 * inch))
 
     for line in lines[1:]:
         stripped_line = line.strip()
-        placeholder = "[Se adjunta una anotación a mano]"
+        placeholder_mano = "[Se adjunta una anotación a mano]"
+        placeholder_grafica = "[INCLUIR GRÁFICA DE CALIBRADO]"
+
+        if placeholder_grafica in stripped_line and curve_image_b64:
+            img = get_image(curve_image_b64, width=5.5 * inch) # Gráfica un poco más ancha
+            if img:
+                story.append(img)
+                story.append(Spacer(1, 0.2 * inch))
+            continue
         
-        if placeholder in stripped_line and professor_drawing:
+        elif placeholder_mano in stripped_line and professor_drawing:
             img = get_image(professor_drawing)
             if img:
-                story.append(Paragraph(line.replace(placeholder, ""), styles['Justify']))
+                story.append(Paragraph(line.replace(placeholder_mano, ""), styles['Justify']))
                 story.append(Spacer(1, 0.1 * inch))
                 story.append(img)
                 story.append(Spacer(1, 0.1 * inch))
@@ -102,11 +76,11 @@ def create_professional_report(content: str, images: Dict[str, Any]) -> BytesIO:
             else:
                  story.append(Paragraph(line, styles['Justify']))
         
-        elif placeholder in stripped_line and annotations_drawings_list:
+        elif placeholder_mano in stripped_line and annotations_drawings_list:
             img_to_add = annotations_drawings_list.pop(0) 
             img = get_image(img_to_add)
             if img:
-                story.append(Paragraph(line.replace(placeholder, ""), styles['Justify']))
+                story.append(Paragraph(line.replace(placeholder_mano, ""), styles['Justify']))
                 story.append(Spacer(1, 0.1 * inch))
                 story.append(img)
                 story.append(Spacer(1, 0.1 * inch))

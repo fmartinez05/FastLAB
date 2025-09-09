@@ -65,16 +65,23 @@ def get_required_results_prompts(full_text: str) -> List[str]:
     except:
         return ["Resultado principal 1:", "Resultado principal 2:", "Observaciones finales:"]
 
-def get_full_report_content(full_text: str, annotations: List[Dict[str, Any]], professor_notes: Dict[str, Any], specific_results: List[Dict[str, Any]]) -> str:
-    # Formateamos los datos para que la IA los entienda
+def get_full_report_content(
+    full_text: str, 
+    annotations: List[Dict[str, Any]], 
+    professor_notes: Dict[str, Any], 
+    specific_results: List[Dict[str, Any]],
+    calculated_data: Dict[str, Any], 
+    standard_curve_data: List[Dict[str, Any]]
+) -> str:
+    
     annotations_text = "\n".join([f"- En el paso '{ann.get('step', 'N/A')}': {ann.get('text', '')}" for ann in annotations if ann.get('text')])
     professor_notes_text = professor_notes.get('text', 'No se añadieron notas escritas.')
-
-    # Convertimos los dibujos (que vendrán como base64) a un simple indicador para la IA
     professor_drawing = "[Se adjunta una anotación a mano]" if professor_notes.get('drawing') else "No hay."
     annotations_drawing_text = "\n".join([f"- En el paso '{ann.get('step', 'N/A')}': [Se adjunta una anotación a mano]" for ann in annotations if ann.get('drawing')])
-
     results_text = "\n".join([f"- {res.get('prompt', 'N/A')}: {res.get('value', '')}" for res in specific_results if res and res.get('value')])
+
+    calculated_text = "\n".join([f"- {key}: {value}" for key, value in calculated_data.items()]) if calculated_data else "No se realizaron cálculos automáticos."
+    curve_data_text = "\n".join([f"- Peso Molecular: {item.get('mw', 'N/A')} Da, Volumen de Elución: {item.get('ve', 'N/A')} mL" for item in standard_curve_data]) if standard_curve_data else "No se introdujeron datos para la recta de calibrado."
 
     prompt = f"""
     Actúa como un científico investigador senior redactando un informe de laboratorio profesional y completo.
@@ -93,7 +100,13 @@ def get_full_report_content(full_text: str, annotations: List[Dict[str, Any]], p
     3.  **Resultados Específicos Medidos (DATOS PRIMARIOS):**
         {results_text if results_text else "No se registraron resultados específicos."}
 
-    4.  **Anotaciones Generales del Procedimiento:**
+    4.  **Resultados Calculados y Datos de Calibrado:**
+        - Cálculos automáticos:
+        {calculated_text}
+        - Datos de la recta de calibrado:
+        {curve_data_text}
+
+    5.  **Anotaciones Generales del Procedimiento:**
         - Notas escritas: {annotations_text if annotations_text else "No se registraron anotaciones generales."}
         - Anotaciones a mano: {annotations_drawing_text if annotations_drawing_text else "No hay."}
 
@@ -110,7 +123,10 @@ def get_full_report_content(full_text: str, annotations: List[Dict[str, Any]], p
     (Resume brevemente el procedimiento seguido, no lo copies literalmente).
 
     ## 3. Resultados
-    (Presenta de forma clara y estructurada los 'Resultados Específicos Medidos'. Si se pueden derivar cálculos de estos datos, realízalos, muéstralos y preséntalos aquí).
+    (Presenta de forma clara y estructurada TODOS los resultados: los medidos, los calculados y los de la recta de calibrado. 
+    **IMPORTANTE**: Después de presentar los datos de la recta de calibrado, inserta el siguiente marcador de posición EXACTAMENTE como se muestra:
+    [INCLUIR GRÁFICA DE CALIBRADO]
+    Este marcador será reemplazado por la imagen de la gráfica.)
 
     ## 4. Discusión
     (Interpreta los resultados, compáralos con la teoría esperada según el guion y discute por qué se obtuvieron esos resultados. Utiliza la información de las 'Notas del Profesor' y las 'Anotaciones Generales' para enriquecer el análisis y proponer posibles fuentes de error si los resultados son inesperados).
@@ -139,12 +155,7 @@ def solve_calculation_query(query: str) -> str:
     """
     return generate_response(prompt)
 
-# --- NUEVA FUNCIÓN PARA EL ASISTENTE ---
 def get_assistant_response(query: str, practice_context: str) -> str:
-    """
-    Genera una respuesta de experto bioquímico. Primero busca en el contexto de la
-    práctica y, si no encuentra la respuesta, utiliza su conocimiento general.
-    """
     prompt = f"""
     Actúa como un científico bioquímico senior y un tutor académico experto. Tu misión es ayudar a un estudiante con sus dudas sobre una práctica de laboratorio.
     Tu base de conocimiento principal es el contexto del guion de la práctica proporcionado a continuación.

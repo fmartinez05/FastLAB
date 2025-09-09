@@ -1,169 +1,162 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// --- CORRECCIÓN DE NOMBRES EN LA LÍNEA SIGUIENTE ---
-import { loadReport, saveReport, downloadReport } from '../api';
-import ProfessorNotes from '../components/ProfessorNotes';
-import CalculationSolver from '../components/CalculationSolver';
-import ProcedureList from '../components/ProcedureList';
-import ResultsAnnotation from '../components/ResultsAnnotation';
+import { loadReport, downloadReport, downloadReportCSV } from '../api';
+import { useAutosave } from '../hooks/useAutosave';
 import AppHeader from '../components/AppHeader';
+import ResultsAnnotation from '../components/ResultsAnnotation';
+import StandardCurve from '../components/StandardCurve';
 import AiAssistant from '../components/AiAssistant';
-import Footer from '../components/Footer';
 
 const LabPage = () => {
-    const { reportId } = useParams();
-    const navigate = useNavigate();
-    const [reportData, setReportData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [error, setError] = useState('');
+  const { reportId } = useParams();
+  const navigate = useNavigate();
+  const [reportData, setReportData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false); // Para el feedback visual del autoguardado
 
-    const loadData = useCallback(async () => {
-        try {
-            // --- Usamos el nombre correcto de la función ---
-            const response = await loadReport(reportId);
-            const data = response.data;
-            setReportData({
-                ...data,
-                annotations: data.annotations || [],
-                professor_notes: data.professor_notes || { text: '' },
-                specific_results: data.specific_results || [],
-                materials: data.materials || {}, // Aseguramos que materials sea un objeto
-            });
-        } catch (err) {
-            setError("Error: No se pudo cargar el informe.");
-            console.error("Error loading report:", err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [reportId]);
+  // Hook de Autoguardado
+  useAutosave(reportId, reportData, setIsSaving);
 
-    useEffect(() => {
-        loadData();
-    }, [loadData]);
-
-    const updateReportData = (field, value) => {
-        setReportData(prev => ({ ...prev, [field]: value }));
+  // Cargar datos del informe al montar el componente
+  useEffect(() => {
+    const fetchReport = async () => {
+      try {
+        const response = await loadReport(reportId);
+        // Inicializamos los nuevos campos si no existen en los datos cargados
+        setReportData({
+          ...response.data,
+          calculated_data: response.data.calculated_data || {},
+          standard_curve_data: response.data.standard_curve_data || [],
+          standard_curve_image: response.data.standard_curve_image || null
+        });
+      } catch (err) {
+        setError('No se pudo cargar el informe. Puede que no exista o no tengas permiso.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchReport();
+  }, [reportId]);
 
-    const handleSave = async () => {
-        setIsSaving(true);
-        try {
-            await saveReport(reportId, reportData);
-            alert("¡Progreso guardado con éxito!");
-        } catch (err) {
-            alert("Error al guardar el informe.");
-            console.error("Error saving report:", err);
-        } finally {
-            setIsSaving(false);
-        }
+  // Lógica de cálculo proactivo
+  useEffect(() => {
+    if (!reportData?.specific_results) return;
+
+    const results = reportData.specific_results;
+    const getResultValue = (promptPart) => {
+        const result = results.find(r => r && r.prompt?.includes(promptPart));
+        return result ? parseFloat(result.value) : NaN;
     };
     
-    const handleGeneratePdf = async () => {
-        setIsLoading(true);
-        try {
-            // --- Usamos el nombre correcto de la función ---
-            const response = await downloadReport(reportId, reportData);
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            const filename = reportData.filename.replace('.pdf', '') || 'informe';
-            link.setAttribute('download', `${filename}_fastlab.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (err) {
-            alert('Error al generar el PDF.');
-            console.error('Error generating PDF', err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const radiusCm = getResultValue("Radio de la columna (cm)");
+    const heightCm = getResultValue("Altura del lecho cromatográfico (cm)");
+    const vo = getResultValue("Volumen de elución del azul de dextrano (mL) (Vo)");
+    const veB12 = getResultValue("Volumen de elución de la vitamina B12 (mL)");
+    
+    const newCalculatedData = { ...reportData.calculated_data };
+    let hasChanged = false;
 
-    if (isLoading) return <div className="loading-app">Cargando laboratorio...</div>;
-    if (error) return <div className="error">{error}</div>;
-    if (!reportData) return <div>No se encontraron datos para este informe.</div>;
+    if (!isNaN(radiusCm) && !isNaN(heightCm)) {
+      const vt = (Math.PI * Math.pow(radiusCm, 2) * heightCm).toFixed(2);
+      if (newCalculatedData.Vt !== vt) {
+        newCalculatedData.Vt = vt;
+        hasChanged = true;
+      }
+    }
+    
+    if (!isNaN(vo) && newCalculatedData.Vt && !isNaN(veB12)) {
+      const kav = ((veB12 - vo) / (parseFloat(newCalculatedData.Vt) - vo)).toFixed(3);
+      if (newCalculatedData.Kav_B12 !== kav) {
+          newCalculatedData.Kav_B12 = kav;
+          hasChanged = true;
+      }
+    }
+    
+    if(hasChanged) {
+        setReportData(prev => ({ ...prev, calculated_data: newCalculatedData }));
+    }
 
-    // --- CÓDIGO NUEVO: Lógica para verificar si hay materiales que mostrar ---
-    const hasMaterials = reportData.materials && 
-        Object.values(reportData.materials).some(category => category.length > 0);
+  }, [reportData?.specific_results]);
 
-    return (
-        <>
-            <AppHeader />
-            <div className="App">
-                <header>
-                    <h1>{reportData.filename}</h1>
-                </header>
-                
-                <button onClick={() => navigate('/dashboard')} style={{marginBottom: '2rem'}}>← Volver al Panel</button>
+  const handleDownloadPDF = async () => {
+    try {
+      const response = await downloadReport(reportId, reportData);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `informe_${reportId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setError('Error al generar el PDF.');
+    }
+  };
 
-                <section>
-                    <h2>Fundamento y Datos Clave</h2>
-                    <div className="summary">
-                        <h3>Fundamento Científico</h3>
-                        <p>{reportData.summary}</p>
-                    </div>
-                    <ProfessorNotes 
-                        notes={reportData.professor_notes} 
-                        setNotes={(value) => updateReportData('professor_notes', value)} 
-                    />
-                    <CalculationSolver />
-                    
-                    {/* --- CÓDIGO NUEVO: Sección de Materiales y Reactivos --- */}
-                    {hasMaterials && (
-                        <section>
-                            <h2>🧪 Materiales y Reactivos</h2>
-                            {Object.keys(reportData.materials).map(category => (
-                                reportData.materials[category].length > 0 && (
-                                    <div key={category} style={{marginBottom: '1.5rem'}}>
-                                        <h3 style={{textTransform: 'capitalize', fontSize: '1.2rem', marginBottom: '0.5rem'}}>
-                                            {category}
-                                        </h3>
-                                        <ul style={{marginTop: 0, paddingLeft: '20px'}}>
-                                            {reportData.materials[category].map((item, index) => (
-                                                <li key={index}>{item}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )
-                            ))}
-                        </section>
-                    )}
-                    
-                    <h2>🔬 Procedimiento Interactivo</h2>
-                    <ProcedureList 
-                        steps={reportData.procedure} 
-                        annotations={reportData.annotations} 
-                        setAnnotations={(value) => updateReportData('annotations', value)} 
-                    />
-                    
-                    <h2>Anotación de Resultados</h2>
-                    <ResultsAnnotation 
-                        prompts={reportData.results_prompts}
-                        results={reportData.specific_results}
-                        setResults={(value) => updateReportData('specific_results', value)}
-                    />
-                    
-                    <hr style={{ margin: '2rem 0' }} />
+  const handleDownloadCSV = async () => {
+    try {
+      const response = await downloadReportCSV(reportId, reportData);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `datos_informe_${reportId}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setError('Error al descargar el CSV.');
+    }
+  };
 
-                    <div style={{display: 'flex', gap: '1rem', marginTop: '1rem'}}>
-                        <button onClick={handleSave} disabled={isSaving || isLoading} style={{flex: 1, backgroundColor: '#5c6bc0'}}>
-                            {isSaving ? 'Guardando...' : '💾 Guardar Progreso'}
-                        </button>
-                        <button onClick={handleGeneratePdf} disabled={isLoading || isSaving} className="generate-report-button">
-                            {isLoading ? 'Generando PDF...' : '📄 Generar y Descargar Informe Final'}
-                        </button>
-                    </div>
-                </section>
-            </div>
-	{/* -- 2. AÑADIR EL COMPONENTE DEL ASISTENTE AQUÍ -- */}
-            <AiAssistant practiceContext={reportData.full_text} />
-	    <Footer />
-        </>
-    );
+  const updateField = useCallback((field, value) => {
+    setReportData(prevData => ({ ...prevData, [field]: value }));
+  }, []);
+
+  if (loading) return <div className="loading-app">Cargando tu sesión de laboratorio...</div>;
+  if (error) return <div className="App"><AppHeader /><p className="error">{error}</p></div>;
+
+  return (
+    <>
+      <AppHeader />
+      <div className="App">
+        <header style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <h2>{reportData.filename}</h2>
+          <span style={{color: isSaving ? '#3182CE' : '#27ae60', transition: 'color 0.5s ease'}}>
+            {isSaving ? 'Guardando...' : 'Progreso Guardado ✓'}
+          </span>
+        </header>
+
+        <section className="summary">
+          <h3>Fundamento Científico</h3>
+          <p>{reportData.summary}</p>
+        </section>
+
+        {/* --- COMPONENTE DE RESULTADOS MODIFICADO --- */}
+        <ResultsAnnotation 
+          prompts={reportData.results_prompts}
+          results={reportData.specific_results}
+          setResults={(newResults) => updateField('specific_results', newResults)}
+          calculatedData={reportData.calculated_data}
+        />
+
+        {/* --- NUEVO COMPONENTE DE GRÁFICA --- */}
+        <StandardCurve
+          data={reportData.standard_curve_data}
+          setData={(newData) => updateField('standard_curve_data', newData)}
+          onImageSave={(base64) => updateField('standard_curve_image', base64)}
+        />
+
+        {/* --- BOTONES DE EXPORTACIÓN --- */}
+        <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem', display: 'flex', gap: '1rem' }}>
+          <button onClick={handleDownloadPDF} className="generate-report-button">Generar Informe PDF</button>
+          <button onClick={handleDownloadCSV} style={{backgroundColor: '#f39c12'}}>Descargar Datos (CSV)</button>
+        </div>
+      </div>
+      <AiAssistant practiceContext={reportData.full_text || ''} />
+    </>
+  );
 };
 
 export default LabPage;

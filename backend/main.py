@@ -8,13 +8,10 @@ from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
-
-# --- NUEVO: Importaciones para el procesamiento de SVG y Base64 ---
 import cairosvg
 import base64
-from io import BytesIO
+from io import BytesIO, StringIO
 
-# --- IMPORTACIONES DEL PROYECTO ---
 from core.pdf_parser import extract_text_from_pdf
 from core.ai_processor import (
     get_practice_summary,
@@ -26,7 +23,6 @@ from core.ai_processor import (
 )
 from core.report_generator import create_professional_report
 
-# --- CONFIGURACIÓN DE FIREBASE ---
 try:
     cred = credentials.Certificate("fastlab-firebase-adminsdk.json")
     firebase_admin.initialize_app(cred)
@@ -37,7 +33,6 @@ except Exception as e:
 
 app = FastAPI(title="LabNote AI Backend")
 
-# --- MIDDLEWARE DE CORS ---
 origins = [
     "http://localhost:3000",
     "https://fastlab-frontend.netlify.app",
@@ -67,7 +62,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": exc.errors()},
     )
 
-# --- DEPENDENCIA DE AUTENTICACIÓN ---
 async def get_current_user(authorization: Optional[str] = Header(None)):
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header is missing")
@@ -78,7 +72,6 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid authentication credentials: {e}")
 
-# --- MODELOS DE DATOS ---
 class CalculationQuery(BaseModel):
     query: str
 
@@ -92,30 +85,27 @@ class ReportDataPayload(BaseModel):
     annotations: Optional[List[Dict[str, Any]]] = []
     professor_notes: Optional[Dict[str, Any]] = {}
     specific_results: Optional[List[Dict[str, Any]]] = []
+    
+    # --- NUEVOS CAMPOS ---
+    calculated_data: Optional[Dict[str, Any]] = {}
+    standard_curve_data: Optional[List[Dict[str, float]]] = []
+    standard_curve_image: Optional[str] = None
 
 class AssistantQuery(BaseModel):
     query: str
     context: str
 
-# --- NUEVO: Función auxiliar para convertir SVG a imagen Base64 ---
 def convert_svg_to_base64_png(svg_string: str) -> Optional[str]:
-    """Convierte un string SVG a una imagen PNG en formato Base64 Data URI."""
     if not svg_string or not isinstance(svg_string, str) or not svg_string.strip().startswith('<svg'):
         return None
     try:
-        # Convierte el string SVG a bytes PNG
         png_bytes = cairosvg.svg2png(bytestring=svg_string.encode('utf-8'))
-        
-        # Codifica los bytes a Base64
         base64_string = base64.b64encode(png_bytes).decode('utf-8')
-        
-        # Devuelve el formato completo Data URI, que es lo que espera el generador de PDF
         return f"data:image/png;base64,{base64_string}"
     except Exception as e:
         print(f"Error al convertir SVG a PNG: {e}")
         return None
 
-# --- ENDPOINTS ---
 @app.post("/api/analyze-pdf/")
 async def analyze_pdf(file: UploadFile = File(...), user: dict = Depends(get_current_user)):
     user_uid = user['uid']
@@ -139,6 +129,10 @@ async def analyze_pdf(file: UploadFile = File(...), user: dict = Depends(get_cur
         "annotations": [],
         "professor_notes": {},
         "specific_results": [],
+        # --- INICIALIZAR NUEVOS CAMPOS ---
+        "calculated_data": {},
+        "standard_curve_data": [],
+        "standard_curve_image": None,
     }
 
     reports_ref = db.collection('users').document(user_uid).collection('reports')
@@ -174,20 +168,16 @@ async def delete_report(report_id: str, user: dict = Depends(get_current_user)):
 
 @app.post("/api/reports/{report_id}/generate-pdf")
 async def generate_report_pdf(report_id: str, payload: ReportDataPayload, user: dict = Depends(get_current_user)):
-    
-    # --- LÓGICA DE PROCESAMIENTO DE IMAGEN ACTUALIZADA ---
     images = {}
     
-    # Procesa el dibujo de las notas del profesor
     prof_notes_drawing_data = payload.professor_notes.get("drawing", {})
     if isinstance(prof_notes_drawing_data, dict):
         svg_data = prof_notes_drawing_data.get("svg")
         if svg_data:
             images["professor_notes_drawing"] = convert_svg_to_base64_png(svg_data)
-        else: # Fallback a la imagen pre-renderizada si no hay SVG
+        else:
             images["professor_notes_drawing"] = prof_notes_drawing_data.get("image")
             
-    # Procesa los dibujos de las anotaciones
     annotations_drawings = {}
     for ann in payload.annotations:
         ann_drawing_data = ann.get("drawing", {})
@@ -199,11 +189,17 @@ async def generate_report_pdf(report_id: str, payload: ReportDataPayload, user: 
                 annotations_drawings[ann.get("step")] = ann_drawing_data.get("image")
     images["annotations_drawings"] = annotations_drawings
 
+    # --- NUEVA LÓGICA PARA LA GRÁFICA DE CALIBRADO ---
+    if payload.standard_curve_image:
+        images["standard_curve_image"] = payload.standard_curve_image
+
     report_content = get_full_report_content(
         payload.full_text,
         payload.annotations,
         payload.professor_notes,
-        payload.specific_results
+        payload.specific_results,
+        payload.calculated_data,
+        payload.standard_curve_data
     )
     
     pdf_buffer = create_professional_report(report_content, images)
@@ -242,8 +238,43 @@ async def save_report(report_id: str, payload: ReportDataPayload, user: dict = D
     if not report_ref.get().exists:
         raise HTTPException(status_code=404, detail="Informe no encontrado.")
     
-    # Usamos `model_dump()` con `exclude_unset=True` para Pydantic v2
     update_data = payload.model_dump(exclude_unset=True)
     report_ref.update(update_data)
     
     return {"message": "Informe actualizado con éxito.", "report_id": report_id}
+
+# --- NUEVO ENDPOINT PARA CSV ---
+@app.post("/api/reports/{report_id}/csv")
+async def generate_report_csv(report_id: str, payload: ReportDataPayload, user: dict = Depends(get_current_user)):
+    output = StringIO()
+    
+    output.write("Tipo de Dato,Parámetro,Valor\n")
+    
+    if payload.specific_results:
+        for res in payload.specific_results:
+            if res:
+                prompt = res.get('prompt', '').replace('"', '""')
+                value = res.get('value', '').replace('"', '""')
+                output.write(f"Resultado Medido,\"{prompt}\",\"{value}\"\n")
+
+    if payload.calculated_data:
+        for key, value in payload.calculated_data.items():
+            param = key.replace('"', '""')
+            val_str = str(value).replace('"', '""')
+            output.write(f"Resultado Calculado,\"{param}\",\"{val_str}\"\n")
+            
+    if payload.standard_curve_data:
+        output.write("\nDatos de la Recta de Calibrado\n")
+        output.write("Peso Molecular (Da),Volumen de Elución (mL)\n")
+        for item in payload.standard_curve_data:
+            mw = item.get('mw', '')
+            ve = item.get('ve', '')
+            output.write(f"{mw},{ve}\n")
+
+    output.seek(0)
+    
+    return StreamingResponse(
+        iter([output.read()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment;filename=datos_informe_{report_id}.csv"}
+    )

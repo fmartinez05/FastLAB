@@ -15,7 +15,7 @@ def generate_response(prompt_text: str) -> str:
     if not API_KEY:
         return "Error: La clave de API de Google no está configurada."
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt_text)
         return response.text
     except Exception as e:

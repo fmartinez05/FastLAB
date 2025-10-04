@@ -15,7 +15,7 @@ def generate_response(prompt_text: str) -> str:
     if not API_KEY:
         return "Error: La clave de API de Google no está configurada."
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-flash-latest')
         response = model.generate_content(prompt_text)
         return response.text
     except Exception as e:
@@ -154,6 +154,7 @@ def get_assistant_response(query: str, practice_context: str) -> str:
     2.  Si encuentras una respuesta clara y directa en el guion, respóndela basándote **exclusivamente** en esa información.
     3.  Si la respuesta **no se encuentra** de forma explícita en el guion, indícalo claramente diciendo: "Esa información no aparece detallada en el guion, pero como experto en la materia te explico:". A continuación, proporciona la mejor respuesta posible utilizando tu conocimiento científico general.
     4.  Responde siempre de manera profesional, clara y didáctica en español.
+    **5.  CRÍTICO: No utilices NUNCA formato LaTeX para las variables (ejemplo: `$V_e$`). En su lugar, escribe las variables como texto plano normal (ejemplo: Ve, Vt, Vo, Kav).**
 
     **Contexto del Guion de la Práctica:**
     ---

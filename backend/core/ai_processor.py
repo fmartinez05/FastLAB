@@ -1,5 +1,5 @@
 import os
-import google as genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 from typing import List, Dict, Any
 import json

@@ -15,18 +15,20 @@ def generate_response(prompt_text: str) -> str:
     if not API_KEY:
         return "Error: La clave de API de Google no está configurada."
     try:
-        client = genai.Client(api_key=API_KEY)
+        # --- CAMBIOS PRINCIPALES AQUÍ ---
 
-        # Modelos v1 (funcionan con este cliente)
-        # Opciones válidas: "gemini-1.5-flash", "gemini-1.5-pro"
-        resp = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=prompt_text,
-        )
+        # 1. Ya no se usa 'genai.Client'. Se instancia el modelo directamente.
+        #    Usamos 'gemini-1.5-flash' como estaba en tu código.
+        model = genai.GenerativeModel('gemini-1.5-flash')
 
-        # En el cliente nuevo, resp.output_text tiene el texto ya ensamblado
-        return getattr(resp, "output_text", "") or getattr(resp, "text", "") or "No se recibió texto."
+        # 2. Se llama a 'generate_content' directamente desde el objeto 'model'.
+        resp = model.generate_content(prompt_text)
+
+        # 3. La respuesta de texto ahora se accede comúnmente a través de 'resp.text'.
+        return resp.text
+
     except Exception as e:
+        # Mantenemos un buen manejo de errores
         print(f"Error de IA: {e}")
         return f"Error al generar la respuesta de la IA: {e}"
 

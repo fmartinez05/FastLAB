@@ -15,17 +15,11 @@ def generate_response(prompt_text: str) -> str:
     if not API_KEY:
         return "Error: La clave de API de Google no está configurada."
     try:
-        # Usamos un modelo estable y recomendado.
-        model = genai.GenerativeModel('gemini-flash-latest')
-
-        # Generamos el contenido.
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt_text)
-
-        # Devolvemos el texto de la respuesta.
         return response.text
-
     except Exception as e:
-        print(f"Error al conectar con la API de Google: {e}")
+        print(f"Error de IA: {e}")
         return f"Error al generar la respuesta de la IA: {e}"
 
 def get_practice_summary(full_text: str) -> str:

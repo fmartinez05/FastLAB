@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+import google as genai
 from dotenv import load_dotenv
 from typing import List, Dict, Any
 import json
@@ -15,9 +15,17 @@ def generate_response(prompt_text: str) -> str:
     if not API_KEY:
         return "Error: La clave de API de Google no está configurada."
     try:
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(prompt_text)
-        return response.text
+        client = genai.Client(api_key=API_KEY)
+
+        # Modelos v1 (funcionan con este cliente)
+        # Opciones válidas: "gemini-1.5-flash", "gemini-1.5-pro"
+        resp = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt_text,
+        )
+
+        # En el cliente nuevo, resp.output_text tiene el texto ya ensamblado
+        return getattr(resp, "output_text", "") or getattr(resp, "text", "") or "No se recibió texto."
     except Exception as e:
         print(f"Error de IA: {e}")
         return f"Error al generar la respuesta de la IA: {e}"

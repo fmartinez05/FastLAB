@@ -1,31 +1,45 @@
 /* === FUENTES Y CONFIGURACIÓN GLOBAL === */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
 
+:root {
+  --ionos-dark-blue: #001835; /* Azul muy oscuro de fondo */
+  --ionos-bright-blue: #003d8f; /* Azul intermedio para formas */
+  --ionos-cyan: #00B0F0; /* Cian brillante para botones */
+  --ionos-cyan-hover: #009bd4;
+  --text-white: #FFFFFF;
+  --text-gray: #A9B7C6;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #0A192F; /* Fondo oscuro principal para toda la página */
-  color: #1A202C; /* Color de texto por defecto para fondos claros (dentro de .App) */
+  background-color: var(--ionos-dark-blue);
+  color: #1A202C;
   line-height: 1.6;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* Prevenir scroll horizontal por las formas de fondo */
 }
 
-/* === ESTILOS PÁGINA DE INICIO (LANDING PAGE) - SIN CAMBIOS === */
+/* === ESTILOS PÁGINA DE INICIO (LANDING PAGE) - NUEVO DISEÑO IONOS === */
 .landing-container {
-  color: #E2E8F0;
+  color: var(--text-white);
   min-height: 100vh;
+  background-color: var(--ionos-dark-blue);
+  position: relative;
 }
 
+/* Navegación */
 .landing-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 5%;
+  padding: 1rem 5%;
   max-width: 1400px;
   margin: 0 auto;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 10;
 }
 
 .landing-logo-container {
@@ -35,82 +49,164 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
   color: #FFFFFF;
+  text-decoration: none;
 }
 
 .landing-logo {
-  height: 40px;
+  height: 32px;
 }
 
 .login-button-nav {
   background-color: transparent;
-  border: 1px solid #48BB78;
-  color: #48BB78;
-  padding: 10px 20px;
-  border-radius: 8px;
+  color: #FFFFFF;
+  padding: 8px 0;
   font-weight: 500;
+  font-size: 0.95rem;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: opacity 0.2s;
 }
 
 .login-button-nav:hover {
-  background-color: rgba(72, 187, 120, 0.1);
-  border-color: #38A169;
-  color: #38A169;
+  opacity: 0.8;
+  text-decoration: underline;
 }
 
-.hero-section {
-  text-align: center;
-  padding: 4rem 2rem 3rem;
-  max-width: 800px;
+/* Hero Section Dividido (Split Layout) */
+.hero-wrapper {
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 3rem 5% 6rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  position: relative;
 }
 
-.hero-section h1 {
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
-  font-weight: 800;
-  line-height: 1.2;
-  margin-bottom: 1rem;
-  background: -webkit-linear-gradient(45deg, #3182CE, #38A169);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Columna Izquierda: Texto */
+.hero-content-left {
+  z-index: 2;
 }
 
-.hero-section p {
-  font-size: 1.25rem;
-  color: #A0AEC0;
-  margin-bottom: 2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.cta-button {
-  background: linear-gradient(45deg, #3182CE, #48BB78);
-  color: white;
-  padding: 1rem 2.5rem;
-  border-radius: 50px;
+.pre-headline {
+  color: var(--ionos-cyan);
+  font-weight: 600;
   font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.hero-content-left h1 {
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  color: white;
+}
+
+/* Lista de Beneficios con Checkmarks */
+.hero-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2.5rem 0;
+}
+
+.hero-checklist li {
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+  color: #E2E8F0;
+}
+
+.check-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--ionos-cyan);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Botón CTA estilo IONOS */
+.cta-button-main {
+  background-color: var(--ionos-cyan);
+  color: #001835; /* Texto oscuro para contraste */
+  padding: 1rem 3rem;
+  border-radius: 50px; /* Forma de píldora */
+  font-size: 1.2rem;
   font-weight: 700;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(49, 130, 206, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 176, 240, 0.3);
+  display: inline-block;
 }
 
-.cta-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 25px rgba(49, 130, 206, 0.4);
+.cta-button-main:hover {
+  background-color: var(--ionos-cyan-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 176, 240, 0.4);
 }
 
+.cta-subtext {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-gray);
+}
+
+/* Columna Derecha: Imagen y Formas */
+.hero-content-right {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* La forma azul abstracta detrás de la imagen */
+.hero-blob-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle, var(--ionos-bright-blue) 0%, rgba(0,24,53,0) 70%);
+  z-index: 0;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.hero-image-mockup {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  /* Si usas una imagen con transparencia, quita el background y border */
+  background-color: #1A202C; 
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Sección Features Grid (Adaptada al nuevo estilo) */
 .features-section {
   padding: 4rem 5% 6rem;
   max-width: 1200px;
   margin: 0 auto;
+  background-color: #001229; /* Ligeramente diferente para separar secciones */
 }
 
 .features-section h2 {
     text-align: center;
-    font-size: 2.5rem;
+    font-size: 2rem;
     margin-bottom: 3rem;
     color: white;
     border: none;
@@ -123,31 +219,146 @@ body {
 }
 
 .feature-card {
-  background-color: rgba(26, 32, 44, 0.7);
-  backdrop-filter: blur(5px);
+  background-color: rgba(255, 255, 255, 0.03); /* Muy sutil */
   padding: 2rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px; /* Bordes más cuadrados como IONOS */
+  border-left: 4px solid var(--ionos-cyan);
   transition: all 0.3s ease;
 }
 
 .feature-card:hover {
+    background-color: rgba(255, 255, 255, 0.06);
     transform: translateY(-5px);
-    border-color: #3182CE;
 }
 
 .feature-card h3 {
   font-size: 1.25rem;
-  color: #E2E8F0;
+  color: #FFFFFF;
   margin-top: 0;
   margin-bottom: 0.5rem;
 }
 
 .feature-card p {
-  color: #A0AEC0;
-  font-size: 1rem;
+  color: #A9B7C6;
+  font-size: 0.95rem;
 }
 
+/* === ESTILOS APP INTERNA (Mantenidos para que funcione el dashboard) === */
+.App {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  color: #1A202C;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  background-color: #0A192F;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.app-logo { height: 35px; }
+
+.user-controls button {
+  background-color: #E53E3E;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.report-card {
+  background-color: #F7FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+.report-card:hover { transform: translateY(-5px); border-color: #3182CE; }
+.report-card h4 { margin-top: 0; color: #2B6CB0; font-size: 1.1rem; }
+
+/* Componentes Internos Genéricos */
+section { padding: 0; margin-bottom: 2rem; }
+h2 { color: #2D3748; font-size: 1.8rem; border-bottom: 2px solid #E2E8F0; margin-top: 2.5rem; }
+h3 { color: #3182CE; font-size: 1.4rem; margin-top: 1.5rem; }
+.summary { background-color: #EBF8FF; padding: 1rem 1.5rem; border-radius: 8px; border-left: 5px solid #3182CE; margin-bottom: 1.5rem; }
+
+button {
+  background-color: #3182CE; color: white; border: none; padding: 12px 20px;
+  border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 500;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.generate-report-button { background-color: #38A169; }
+
+input[type="file"] { display: block; margin: 1rem 0; padding: 8px; border: 1px solid #CBD5E0; border-radius: 5px; background-color: #F7FAFC; }
+input[type="file"]::file-selector-button { background-color: #0A192F; color: white; border: 1px solid #0A192F; padding: 8px 12px; border-radius: 5px; margin-right: 1rem; cursor: pointer; }
+
+.loading, .error { padding: 1rem; text-align: center; }
+.error { background-color: #FFF5F5; color: #C53030; border-color: #FC8181; }
+
+/* Chat y Footer básicos */
+.site-footer { background-color: #001025; color: #A0AEC0; padding: 3rem 5%; border-top: 1px solid rgba(255,255,255,0.05); }
+.footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
+.footer-section h3 { color: white; font-size: 1rem; margin-top:0; }
+.footer-link, .footer-link-button { color: #A9B7C6; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
+.footer-link:hover, .footer-link-button:hover { color: var(--ionos-cyan); }
+
+/* Modal Privacidad */
+.modal-backdrop { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,24,53,0.9); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+.modal-content { background: #001835; color: #fff; max-width: 800px; padding: 0; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; max-height: 90vh; display:flex; flex-direction: column; }
+.modal-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
+.modal-body { padding: 1.5rem; overflow-y: auto; }
+.modal-header h2 { border: none; margin: 0; color: white; font-size: 1.4rem; padding: 0; }
+.modal-close-button { background: none; color: white; font-size: 1.5rem; padding: 0; }
+
+/* Responsive para la Landing */
+@media (max-width: 768px) {
+  .hero-wrapper {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding-top: 2rem;
+  }
+  .hero-checklist li {
+    justify-content: center; /* Centrar items en móvil */
+  }
+  .hero-content-right {
+    margin-top: 2rem;
+  }
+  .hero-image-mockup {
+    max-width: 100%;
+  }
+  .hero-content-left h1 {
+    font-size: 2.5rem;
+  }
+}
 
 /* === ESTILOS APP INTERNA (Dashboard, LabPage) - CONTENEDOR BLANCO === */
 

@@ -1,10 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginWithGoogle } from '../utils/auth';
 import Footer from '../components/Footer';
 
+// === CONFIGURACIÓN DE IMÁGENES DEL CARRUSEL ===
+// Asegúrate de tener estas imágenes en tu carpeta 'public'
+// O cambia estos nombres por los de tus imágenes reales.
+const carouselImages = [
+    "/fastlab_logo.png",       // Imagen 1 (Usando tu logo como placeholder temporal)
+    "/mockup_dashboard.png", // Imagen 2: Debería ser una captura de tu dashboard
+    "/mockup_report.png"     // Imagen 3: Debería ser una captura de un reporte
+];
+
 const LandingPage = () => {
   const navigate = useNavigate();
+  // Estado para controlar qué imagen del carrusel se muestra
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Efecto para cambiar la imagen automáticamente cada varios segundos
+  useEffect(() => {
+      // Configurar el intervalo (ej. 4000ms = 4 segundos)
+      const intervalId = setInterval(() => {
+          setCurrentImageIndex((prevIndex) => 
+              // Incrementa el índice, y usa módulo (%) para volver a 0 al llegar al final
+              (prevIndex + 1) % carouselImages.length
+          );
+      }, 4000); 
+
+      // Limpieza: detener el intervalo cuando el componente se desmonta
+      return () => clearInterval(intervalId);
+  }, []); // El array vacío asegura que esto solo se configure una vez al montar
 
   const handleLogin = async () => {
     const user = await loginWithGoogle();
@@ -24,7 +49,6 @@ const LandingPage = () => {
           onClick={() => navigate('/')} 
           style={{ cursor: 'pointer' }}
         >
-          {/* Logo pequeño */}
           <img src="/fastlab_logo.png" alt="FastLAB Logo" className="landing-logo" />
           <span>LabNote</span>
         </div>
@@ -44,7 +68,6 @@ const LandingPage = () => {
                 <span className="pre-headline">Tu cuaderno de laboratorio digital</span>
                 <h1>Analiza tus prácticas de bioquímica con IA</h1>
                 
-                {/* Lista de beneficios estilo "Check" */}
                 <ul className="hero-checklist">
                     <li>
                         <span className="check-icon">✓</span>
@@ -70,18 +93,31 @@ const LandingPage = () => {
                 </div>
             </div>
 
-            {/* Columna Derecha: Imagen Visual */}
+            {/* Columna Derecha: CARRUSEL DE IMÁGENES */}
             <div className="hero-content-right">
                 {/* Forma abstracta de fondo */}
                 <div className="hero-blob-bg"></div>
                 
-                {/* AQUÍ: Reemplaza esta imagen con una captura de tu app o un 'laptop mockup' para que se vea pro */}
-                <img 
-                    src="/fastlab_logo.png" 
-                    alt="Vista previa de LabNote" 
-                    className="hero-image-mockup" 
-                    style={{ padding: '2rem', backgroundColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }} 
-                />
+                {/* Contenedor "marco" que recorta el contenido */}
+                <div className="carousel-viewport">
+                    {/* La "pista" que se mueve lateralmente usando CSS transform */}
+                    <div 
+                        className="carousel-track" 
+                        style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+                    >
+                        {/* Mapeamos el array de imágenes */}
+                        {carouselImages.map((imgSrc, index) => (
+                            <img 
+                                key={index} 
+                                src={imgSrc} 
+                                alt={`Vista previa de LabNote pantalla ${index + 1}`} 
+                                className="carousel-image-item" 
+                                // Añadimos un pequeño padding si usamos el logo para que no se pegue a los bordes
+                                style={imgSrc.includes('logo') ? { padding: '2rem', objectFit: 'contain' } : {}}
+                            />
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
 

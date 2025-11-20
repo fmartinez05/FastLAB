@@ -1,29 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginWithGoogle } from '../utils/auth';
 import Footer from '../components/Footer';
 
-// Imágenes seleccionadas de Unsplash (Laboratorio, Análisis, Tablet científica)
-const carouselImages = [
-    "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-];
-
 const LandingPage = () => {
   const navigate = useNavigate();
-  // Estado para el carrusel
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // Efecto para cambiar la imagen cada 4 segundos
-  useEffect(() => {
-      const intervalId = setInterval(() => {
-          setCurrentImageIndex((prevIndex) => 
-              (prevIndex + 1) % carouselImages.length
-          );
-      }, 4000); 
-      return () => clearInterval(intervalId);
-  }, []);
 
   const handleLogin = async () => {
     const user = await loginWithGoogle();
@@ -36,7 +17,7 @@ const LandingPage = () => {
 
   return (
     <div className="landing-container">
-      {/* Barra de Navegación Mejorada */}
+      {/* Barra de Navegación Superior */}
       <nav className="landing-nav">
         <div 
           className="landing-logo-container" 
@@ -46,95 +27,98 @@ const LandingPage = () => {
           <img src="/fastlab_logo.png" alt="FastLAB Logo" className="landing-logo" />
           <span>LabNote</span>
         </div>
-        
         <div className="nav-actions">
-            <a href="#features" className="nav-link">Ventajas</a>
-            <button className="login-button-nav" onClick={handleLogin}>
-               <span>Iniciar Sesión</span>
-               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+             <button className="login-text-btn" onClick={handleLogin}>Soporte</button>
+             <button className="login-button-nav" onClick={handleLogin}>
+              Iniciar Sesión
             </button>
         </div>
       </nav>
 
+      {/* Sección Principal (Hero) - Estilo IONOS */}
       <main>
-        {/* Hero Section estilo Split (IONOS) */}
-        <div className="hero-wrapper">
-            {/* Columna Izquierda */}
-            <div className="hero-content-left">
-                <span className="pre-headline">Tu página web con dominio propio</span>
-                <h1>Analiza tus prácticas de laboratorio en minutos</h1>
-                
-                <ul className="hero-checklist">
-                    <li>
-                        <span className="check-icon">✓</span>
-                        Plantillas profesionales de informes
-                    </li>
-                    <li>
-                        <span className="check-icon">✓</span>
-                        Modificación del diseño con IA
-                    </li>
-                    <li>
-                        <span className="check-icon">✓</span>
-                        Cálculos y gráficas automáticos
-                    </li>
-                </ul>
+        <section className="hero-section">
+          <div className="hero-content">
+            <p className="hero-subtitle">Tu asistente de laboratorio personal</p>
+            <h1>Analiza tus prácticas de laboratorio en minutos</h1>
+            
+            <ul className="hero-benefits-list">
+              <li>
+                <span className="check-icon">✓</span>
+                <span>Análisis de guiones con Inteligencia Artificial</span>
+              </li>
+              <li>
+                <span className="check-icon">✓</span>
+                <span>Cálculos estequiométricos y diluciones automáticas</span>
+              </li>
+              <li>
+                <span className="check-icon">✓</span>
+                <span>Generación de informes PDF profesionales</span>
+              </li>
+            </ul>
 
-                <div className="hero-cta-block">
-                    <button className="cta-button-main" onClick={handleLogin}>
-                        Ver packs ahora
-                    </button>
-                    <span className="cta-subtext">
-                        Desde 0€/mes • IVA excl.
-                    </span>
-                </div>
+            <div className="hero-pricing">
+              <span className="price-label">Empieza gratis hoy mismo</span>
             </div>
 
-            {/* Columna Derecha: CARRUSEL AUTOMÁTICO */}
-            <div className="hero-content-right">
-                <div className="hero-blob-bg"></div>
-                
-                <div className="carousel-viewport">
-                    <div 
-                        className="carousel-track" 
-                        style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
-                    >
-                        {carouselImages.map((imgSrc, index) => (
-                            <img 
-                                key={index} 
-                                src={imgSrc} 
-                                alt={`LabNote vista ${index + 1}`} 
-                                className="carousel-image-item" 
-                            />
-                        ))}
+            <button className="cta-button" onClick={handleLogin}>
+              Comenzar ahora
+            </button>
+            <p className="hero-note">* No se requiere tarjeta de crédito</p>
+          </div>
+
+          {/* Columna Derecha: Imagen o Mockup Visual */}
+          <div className="hero-visual">
+            <div className="visual-card-stack">
+                <div className="visual-card back"></div>
+                <div className="visual-card front">
+                    {/* Si tienes una captura de pantalla de tu app, descomenta la línea de abajo y pon la ruta correcta */}
+                    {/* <img src="/dashboard_screenshot.png" alt="App Interface" /> */}
+                    <div className="mockup-placeholder">
+                        <div className="mock-header"></div>
+                        <div className="mock-body">
+                            <div className="mock-line w-70"></div>
+                            <div className="mock-line w-50"></div>
+                            <div className="mock-graph"></div>
+                        </div>
+                        <div className="mock-badge">IA Ready</div>
                     </div>
                 </div>
             </div>
-        </div>
+          </div>
+        </section>
 
-        {/* Sección de Ventajas */}
-        <section id="features" className="features-section">
-          <h2>Todo lo que necesitas para tus prácticas</h2>
+        {/* Sección de Ventajas (Grid) */}
+        <section className="features-section">
+          <h2>Potencia tu flujo de trabajo científico</h2>
           <div className="feature-grid">
             <div className="feature-card">
               <h3>🔬 Análisis Profundo</h3>
-              <p>La IA comprende tus guiones a nivel experto, identificando fundamentos, procedimientos y resultados clave.</p>
+              <p>Nuestra IA identifica fundamentos, procedimientos y resultados clave al instante.</p>
             </div>
             <div className="feature-card">
-              <h3>🧮 Cero Errores</h3>
-              <p>Desde diluciones hasta análisis complejos, la IA valida los cálculos eliminando el error humano.</p>
+              <h3>🧮 Cálculos Sin Errores</h3>
+              <p>Olvídate de los errores en diluciones y análisis estequiométricos complejos.</p>
             </div>
             <div className="feature-card">
-              <h3>✍️ Digitalización</h3>
-              <p>Convierte tus notas manuales en informes estructurados y listos para presentar.</p>
+              <h3>✍️ Notas Inteligentes</h3>
+              <p>Usa teclado o Apple Pencil. LabNote organiza tus anotaciones automáticamente.</p>
             </div>
             <div className="feature-card">
-              <h3>⚡ Velocidad</h3>
-              <p>Reduce horas de redacción a minutos. Enfócate en entender el experimento, no en escribirlo.</p>
+              <h3>📄 Informes PDF</h3>
+              <p>Genera documentos listos para imprimir con estructura académica profesional.</p>
+            </div>
+             <div className="feature-card">
+              <h3>☁️ Cloud Sync</h3>
+              <p>Tus datos seguros y accesibles desde cualquier dispositivo, en cualquier lugar.</p>
+            </div>
+             <div className="feature-card">
+              <h3>⚡ Productividad</h3>
+              <p>Dedica tu tiempo a la ciencia y deja la burocracia a nuestra IA.</p>
             </div>
           </div>
         </section>
       </main>
-      
       <Footer />
     </div>
   );

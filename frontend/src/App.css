@@ -1,45 +1,35 @@
 /* === FUENTES Y CONFIGURACIÓN GLOBAL === */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
 
-:root {
-  --ionos-dark-blue: #001835; /* Azul muy oscuro de fondo */
-  --ionos-bright-blue: #003d8f; /* Azul intermedio para formas */
-  --ionos-cyan: #00B0F0; /* Cian brillante para botones */
-  --ionos-cyan-hover: #009bd4;
-  --text-white: #FFFFFF;
-  --text-gray: #A9B7C6;
-}
-
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: var(--ionos-dark-blue);
-  color: #1A202C;
+  /* Cambio a un azul más profundo y corporativo (Estilo IONOS) */
+  background-color: #002E5B; 
+  color: #1A202C; 
   line-height: 1.6;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden; /* Prevenir scroll horizontal */
 }
 
-/* === ESTILOS PÁGINA DE INICIO (LANDING PAGE) - NUEVO DISEÑO PRO === */
+/* === ESTILOS PÁGINA DE INICIO (LANDING PAGE) === */
 .landing-container {
-  color: var(--text-white);
+  color: #FFFFFF;
   min-height: 100vh;
-  background-color: var(--ionos-dark-blue);
-  position: relative;
+  background: linear-gradient(180deg, #002E5B 0%, #001D3D 100%);
+  overflow-x: hidden;
 }
 
-/* Navegación Estilo IONOS */
 .landing-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.2rem 5%;
+  padding: 1rem 5%;
   max-width: 1400px;
   margin: 0 auto;
-  position: relative;
-  z-index: 10;
+  /* Eliminamos borde inferior para un look más limpio */
+  border-bottom: none; 
 }
 
 .landing-logo-container {
@@ -49,207 +39,272 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
   color: #FFFFFF;
-  text-decoration: none;
 }
 
 .landing-logo {
-  height: 32px;
+  height: 40px;
 }
 
 .nav-actions {
     display: flex;
-    gap: 20px;
     align-items: center;
+    gap: 20px;
 }
 
-.nav-link {
-    color: var(--text-white);
-    text-decoration: none;
-    font-weight: 500;
+.login-text-btn {
+    background: none;
+    border: none;
+    color: #E2E8F0;
     font-size: 0.95rem;
-    transition: color 0.2s;
+    padding: 0;
+    cursor: pointer;
 }
-.nav-link:hover {
-    color: var(--ionos-cyan);
+.login-text-btn:hover {
+    color: white;
+    text-decoration: underline;
+    background: none;
+    transform: none;
 }
 
 .login-button-nav {
   background-color: transparent;
-  color: var(--text-white);
-  padding: 8px 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 4px; /* Bordes menos redondeados, más corporativo */
+  font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  transition: all 0.2s ease-in-out;
 }
 
 .login-button-nav:hover {
-  color: var(--ionos-cyan);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: white;
 }
 
-/* Hero Section Dividido (Split Layout) */
-.hero-wrapper {
+/* --- HERO SECTION REDISEÑADO (Estilo Split) --- */
+.hero-section {
+  display: flex;
+  flex-direction: column; /* Mobile first */
+  align-items: center;
+  padding: 3rem 5% 4rem;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem 5% 6rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-  position: relative;
+  gap: 3rem;
 }
 
-/* Columna Izquierda: Texto */
-.hero-content-left {
-  z-index: 2;
+@media (min-width: 968px) {
+  .hero-section {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+    padding: 5rem 5% 6rem;
+  }
+  
+  .hero-content {
+    flex: 1;
+    max-width: 550px;
+  }
+  
+  .hero-visual {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+  }
 }
 
-.pre-headline {
-  color: var(--ionos-cyan);
-  font-weight: 600;
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  display: block;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.hero-subtitle {
+    color: #00C0F3; /* Cian brillante */
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
 }
 
-.hero-content-left h1 {
-  font-size: clamp(2.5rem, 4vw, 3.8rem);
+.hero-section h1 {
+  font-size: clamp(2.5rem, 5vw, 3.8rem);
   font-weight: 700;
   line-height: 1.1;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   color: white;
+  background: none;
+  -webkit-text-fill-color: white;
 }
 
-/* Lista de Beneficios con Checkmarks */
-.hero-checklist {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 2.5rem 0;
+/* Lista de beneficios con Checkmarks */
+.hero-benefits-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2.5rem 0;
 }
 
-.hero-checklist li {
-  display: flex;
-  align-items: center;
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
-  color: #E2E8F0;
+.hero-benefits-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+    color: #E2E8F0;
 }
 
 .check-icon {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 176, 240, 0.2); /* Cian transparente */
-  color: var(--ionos-cyan);
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  margin-right: 15px;
-  font-size: 14px;
-  font-weight: bold;
-  flex-shrink: 0;
+    background-color: rgba(255,255,255,0.2);
+    color: #00C0F3;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
 }
 
-/* Botón CTA estilo IONOS */
-.cta-button-main {
-  background-color: var(--ionos-cyan);
-  color: #001835; /* Texto oscuro para contraste */
+.hero-pricing {
+    margin-bottom: 1.5rem;
+}
+.price-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+}
+
+.cta-button {
+  /* Botón estilo IONOS: Cian sólido y brillante */
+  background-color: #00C0F3; 
+  color: #002E5B;
   padding: 1rem 3rem;
-  border-radius: 50px; /* Forma de píldora */
+  border-radius: 50px;
   font-size: 1.2rem;
   font-weight: 700;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 176, 240, 0.4);
-  display: inline-block;
+  box-shadow: 0 4px 20px rgba(0, 192, 243, 0.4);
+  width: 100%;
+  max-width: 300px;
 }
 
-.cta-button-main:hover {
-  background-color: var(--ionos-cyan-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 176, 240, 0.5);
+.cta-button:hover {
+  background-color: #33D1FF;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(0, 192, 243, 0.6);
 }
 
-.cta-subtext {
-  display: block;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: var(--text-gray);
+.hero-note {
+    font-size: 0.8rem;
+    color: #A0AEC0;
+    margin-top: 1rem;
 }
 
-/* --- Columna Derecha: Carrusel e Imagenes --- */
-.hero-content-right {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Forma azul abstracta detrás */
-.hero-blob-bg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 140%;
-  height: 140%;
-  background: radial-gradient(circle, var(--ionos-bright-blue) 0%, rgba(0,24,53,0) 70%);
-  z-index: 0;
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-/* Contenedor "marco" del carrusel */
-.carousel-viewport {
+/* --- HERO VISUAL (Mockup CSS) --- */
+.visual-card-stack {
     position: relative;
-    z-index: 2;
     width: 100%;
-    max-width: 600px;
-    aspect-ratio: 16 / 10;
-    border-radius: 12px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    max-width: 500px;
+    height: 350px;
+}
+
+.visual-card {
+    position: absolute;
+    border-radius: 20px;
+}
+
+/* Tarjeta de fondo decorativa */
+.visual-card.back {
+    top: 20px;
+    right: 20px;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #00C0F3 0%, #005C99 100%);
+    opacity: 0.2;
+    transform: rotate(3deg);
+    z-index: 0;
+}
+
+/* Tarjeta principal (Mockup de la app) */
+.visual-card.front {
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1); /* Glassmorphism */
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    z-index: 1;
     overflow: hidden;
-    background-color: #000; /* Fondo negro mientras carga */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Pista deslizante */
-.carousel-track {
     display: flex;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1); 
+    justify-content: center;
+    align-items: center;
 }
 
-.carousel-image-item {
-    width: 100%; 
-    flex-shrink: 0;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+/* Placeholder CSS para simular la interfaz */
+.mockup-placeholder {
+    width: 90%;
+    height: 90%;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Sección Features Grid */
+.mock-header {
+    height: 40px;
+    background: #F7FAFC;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.mock-body {
+    padding: 20px;
+    flex: 1;
+}
+
+.mock-line {
+    height: 10px;
+    background: #EDF2F7;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.w-70 { width: 70%; }
+.w-50 { width: 50%; }
+
+.mock-graph {
+    margin-top: 20px;
+    height: 100px;
+    background: linear-gradient(180deg, #EBF8FF 0%, white 100%);
+    border: 1px solid #BEE3F8;
+    border-radius: 8px;
+}
+
+.mock-badge {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: #00C0F3;
+    color: #002E5B;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* --- FEATURES SECTION --- */
 .features-section {
   padding: 4rem 5% 6rem;
   max-width: 1200px;
   margin: 0 auto;
-  background-color: #001229;
-  border-radius: 20px;
-  margin-bottom: 4rem;
+  background-color: #002E5B; /* Mismo color del fondo */
 }
 
 .features-section h2 {
     text-align: center;
-    font-size: 2rem;
-    margin-bottom: 3rem;
+    font-size: 2.2rem;
+    margin-bottom: 4rem;
     color: white;
     border: none;
 }
@@ -257,45 +312,35 @@ body {
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .feature-card {
-  background-color: rgba(255, 255, 255, 0.03); 
-  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 2.5rem 2rem;
   border-radius: 8px;
-  border-left: 4px solid var(--ionos-cyan);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
 }
 
 .feature-card:hover {
-    background-color: rgba(255, 255, 255, 0.06);
     transform: translateY(-5px);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: #00C0F3;
 }
 
 .feature-card h3 {
   font-size: 1.25rem;
-  color: #FFFFFF;
+  color: white;
   margin-top: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .feature-card p {
-  color: #A9B7C6;
-  font-size: 0.95rem;
+  color: #CBD5E0;
+  font-size: 1rem;
+  line-height: 1.7;
 }
-
-/* === ESTILOS FOOTER (Adaptado al tema oscuro) === */
-.site-footer {
-  background-color: #001025;
-  color: #A0AEC0;
-  padding: 3rem 5%;
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-.footer-section h3 { color: white; margin-top: 0; font-size: 1.1rem; }
-.footer-link, .footer-link-button { color: #A9B7C6; transition: color 0.3s; }
-.footer-link:hover, .footer-link-button:hover { color: var(--ionos-cyan); }
-.footer-copyright { border-top-color: rgba(255,255,255,0.1); }
 
 /* === ESTILOS APP INTERNA (Mantenidos para que funcione el dashboard) === */
 .App {

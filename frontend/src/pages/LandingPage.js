@@ -19,63 +19,96 @@ const LandingPage = () => {
     <div className="landing-container">
       {/* Barra de Navegación Superior */}
       <nav className="landing-nav">
-        {/* MODIFICACIÓN: El logo ahora es un botón para recargar la página de inicio. */}
         <div 
           className="landing-logo-container" 
           onClick={() => navigate('/')} 
           style={{ cursor: 'pointer' }}
         >
+          {/* Logo pequeño */}
           <img src="/fastlab_logo.png" alt="FastLAB Logo" className="landing-logo" />
           <span>LabNote</span>
         </div>
-        <button className="login-button-nav" onClick={handleLogin}>
-          Iniciar Sesión
-        </button>
+        
+        <div className="nav-actions">
+            <button className="login-button-nav" onClick={handleLogin}>
+            Iniciar sesión
+            </button>
+        </div>
       </nav>
 
-      {/* Sección Principal (Hero) */}
+      {/* Sección Principal (Hero) Estilo Split */}
       <main>
-        <section className="hero-section">
-          <h1>Analiza tus prácticas de laboratorio sin esfuerzo con IA</h1>
-          <p>
-            LabNote es la herramienta definitiva para estudiantes y profesionales de bioquímica. Sube tus guiones de prácticas y deja que nuestra inteligencia artificial haga el trabajo pesado.
-          </p>
-          <button className="cta-button" onClick={handleLogin}>
-            Comenzar ahora
-          </button>
-        </section>
+        <div className="hero-wrapper">
+            {/* Columna Izquierda: Texto y CTA */}
+            <div className="hero-content-left">
+                <span className="pre-headline">Tu cuaderno de laboratorio digital</span>
+                <h1>Analiza tus prácticas de bioquímica con IA</h1>
+                
+                {/* Lista de beneficios estilo "Check" */}
+                <ul className="hero-checklist">
+                    <li>
+                        <span className="check-icon">✓</span>
+                        Análisis de guiones en PDF al instante
+                    </li>
+                    <li>
+                        <span className="check-icon">✓</span>
+                        Generación de informes profesionales
+                    </li>
+                    <li>
+                        <span className="check-icon">✓</span>
+                        Cálculos de estequiometría automáticos
+                    </li>
+                </ul>
 
-        {/* Sección de Ventajas */}
+                <div className="hero-cta-block">
+                    <button className="cta-button-main" onClick={handleLogin}>
+                        Comenzar gratis
+                    </button>
+                    <span className="cta-subtext">
+                        Sin tarjeta de crédito • Acceso inmediato
+                    </span>
+                </div>
+            </div>
+
+            {/* Columna Derecha: Imagen Visual */}
+            <div className="hero-content-right">
+                {/* Forma abstracta de fondo */}
+                <div className="hero-blob-bg"></div>
+                
+                {/* AQUÍ: Reemplaza esta imagen con una captura de tu app o un 'laptop mockup' para que se vea pro */}
+                <img 
+                    src="/fastlab_logo.png" 
+                    alt="Vista previa de LabNote" 
+                    className="hero-image-mockup" 
+                    style={{ padding: '2rem', backgroundColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }} 
+                />
+            </div>
+        </div>
+
+        {/* Sección de Ventajas (Grid) */}
         <section className="features-section">
-          <h2>¿Qué podrás conseguir apoyándote en LabNote?</h2>
+          <h2>Potencia tu trabajo en el laboratorio</h2>
           <div className="feature-grid">
             <div className="feature-card">
-              <h3>🔬 Análisis Científico Profundo</h3>
-              <p>Nuestra IA comprende tus guiones a nivel experto, identificando fundamentos, procedimientos y resultados clave.</p>
+              <h3>🔬 Análisis Profundo</h3>
+              <p>La IA comprende tus guiones a nivel experto, identificando fundamentos, procedimientos y resultados clave.</p>
             </div>
             <div className="feature-card">
-              <h3>🧮 Cálculos Sin Errores</h3>
-              <p>Desde complejas diluciones hasta análisis estequiométricos, la IA realiza todos los cálculos necesarios, eliminando el error humano.</p>
+              <h3>🧮 Cero Errores</h3>
+              <p>Desde diluciones hasta análisis complejos, la IA valida los cálculos eliminando el error humano.</p>
             </div>
             <div className="feature-card">
-              <h3>✍️ Anotaciones Inteligentes</h3>
-              <p>Toma notas con teclado o Apple Pencil. LabNote organiza y analiza toda tu información para generar conclusiones.</p>
+              <h3>✍️ Digitalización</h3>
+              <p>Convierte tus notas manuales en informes estructurados y listos para presentar.</p>
             </div>
             <div className="feature-card">
-              <h3>📄 Informes Profesionales Automáticos</h3>
-              <p>Con un solo clic, genera informes en PDF listos para imprimir, con una estructura profesional y basados en tus datos.</p>
-            </div>
-             <div className="feature-card">
-              <h3>☁️ Guardado en la Nube</h3>
-              <p>Todos tus informes y anotaciones se guardan de forma segura en tu cuenta, accesibles desde cualquier dispositivo.</p>
-            </div>
-             <div className="feature-card">
-              <h3>⚡ Acelera tu Productividad</h3>
-              <p>Dedica tu tiempo a las tareas donde de verdad marcas la diferencia y deja que la IA se encargue del resto.</p>
+              <h3>⚡ Velocidad</h3>
+              <p>Reduce horas de redacción a minutos. Enfócate en entender el experimento, no en escribirlo.</p>
             </div>
           </div>
         </section>
       </main>
+      
       <Footer />
     </div>
   );

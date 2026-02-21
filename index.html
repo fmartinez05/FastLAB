@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>LABNOTE | Inicio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="nav-left">
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="LABNOTE">
+            </a>
+        </div>
+        <div class="nav-center">
+            <form id="search-form" class="search-bar">
+                <input type="text" id="search-input" placeholder="¿Qué estás buscando?">
+                <button type="submit" class="search-btn">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        <div class="nav-right">
+            <a href="catalogo.html">Catálogo</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <video autoplay muted loop playsinline>
+            <source src="videoportada.mp4" type="video/mp4">
+        </video>
+        <div class="hero-content">
+            <h1 class="hero-text">Transformando la ciencia en recuerdos</h1>
+            <p class="hero-subtext">Descubre nuestra exclusiva colección de figuras 3D con precisión anatómica y molecular. Diseños tangibles creados para profesionales, estudiantes y apasionados de la ciencia.</p>
+            <div class="hero-buttons">
+                <a href="catalogo.html" class="btn-hero-primary">Explorar catálogo</a>
+                <a href="contacto.html" class="btn-hero-secondary">Diseño a medida</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="carousel-section reveal">
+        <h2>Galería de figuras 3D</h2>
+        
+        <div class="carousel-container">
+            <div class="carousel-track">
+                <div class="carousel-item">
+                    <img src="bacteriófago.jpg" alt="Bacteriófago">
+                    <p>Bacteriófago 3D</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="luciferasa.jpg" alt="Luciferasa">
+                    <p>Luciferasa 3D</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="inmunog.jpg" alt="Inmunoglobulina G">
+                    <p>Inmunoglobulina G 3D</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="bacteriófago.jpg" alt="Bacteriófago">
+                    <p>Bacteriófago 3D</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="luciferasa.jpg" alt="Luciferasa">
+                    <p>Luciferasa 3D</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="inmunog.jpg" alt="Inmunoglobulina G">
+                    <p>Inmunoglobulina G 3D</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="catalogo.html" class="btn-catalogo">Ver catálogo</a>
+    </section>
+
+    <section class="custom-figure-section">
+        <h2>Figura por encargo</h2>
+        <p>¿Tienes en mente una molécula, virus, bacteria o estructura anatómica específica que no está en nuestro catálogo? En LABNOTE realizamos diseños y modelados 3D completamente personalizados. Tú nos das la idea o la referencia científica, y nosotros nos encargamos de transformarla en un recuerdo tangible de alta precisión.</p>
+        <a href="contacto.html" class="btn-encargar">Encargar ahora</a>
+    </section>
+
+    <section class="reviews-section">
+        <h2>Lo que dicen nuestros estudiantes</h2>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <h4>Rebeca Reguero</h4>
+                <p>Estudiante</p>
+                <br>
+                <p>"¡El nivel de detalle es alucinante! Compré la luciferasa y queda espectacular en mi escritorio. Me motiva mucho mientras estudio bioquímica."</p>
+            </div>
+            <div class="review-card">
+                <h4>David Villén</h4>
+                <p>Estudiante</p>
+                <br>
+                <p>"Tener un bacteriófago en 3D en mis manos hace que sea mucho más fácil visualizar la teoría de microbiología. Una calidad impresionante."</p>
+            </div>
+            <div class="review-card">
+                <h4>Francisco Martínez</h4>
+                <p>Estudiante</p>
+                <br>
+                <p>"La Inmunoglobulina G es una pieza de arte y ciencia. El material es resistente y preciso. ¡Repetiré seguro para ampliar mi colección!"</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 LABNOTE. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
